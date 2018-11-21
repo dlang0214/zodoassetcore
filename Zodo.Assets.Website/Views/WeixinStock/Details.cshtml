@@ -1,0 +1,126 @@
+﻿@model Zodo.Assets.Core.Stock
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>@Model.Title</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+    <style>
+        .list-bottom * {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .list-bottom:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 15px;
+            right: 0;
+            height: 1px;
+            border-top: 1px solid #e5e5e5;
+            color: #e5e5e5;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+            -webkit-transform: scaleY(0.5);
+            transform: scaleY(0.5);
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body ontouchstart>
+
+    <div class="page__bd">
+
+        @if (Model == null)
+        {
+            <div class="weui-msg">
+                <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
+                <div class="weui-msg__text-area">
+                    <h2 class="weui-msg__title">暂无数据</h2>
+                    <p class="weui-msg__desc">
+                        未找到有效的盘点记录。<br />
+                        请在PC端登录管理后台创建新的盘点后重试。
+                    </p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="weui-cells__title">盘点信息</div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        盘点名称
+                    </div>
+                    <div class="weui-cell__ft">
+                        @Model.Title
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        盘点说明
+                    </div>
+                    <div class="weui-cell__ft">
+                        @Model.Remark
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        创建日期
+                    </div>
+                    <div class="weui-cell__ft">
+                        @Model.CreateAt.ToString("yyyy-MM-dd")
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        创建人
+                    </div>
+                    <div class="weui-cell__ft">
+                        @Model.Creator
+                    </div>
+                </div>
+            </div>
+            @if (!Model.IsFinish)
+            {
+            <div class="weui-btn-area">
+                <a id="btn-create" class="weui-btn weui-btn_primary" href="/WeixinStock/Check/@Model.Id">开始盘点</a>
+                <a id="btn-create" class="weui-btn weui-btn_default" href="/WeixinStock">返回列表</a>
+            </div>
+            }
+            else
+            {
+                <div class="weui-cells">
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">盘点状态</div>
+                        <div class="weui-cell__ft">已完成</div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">盘点完成于</div>
+                        <div class="weui-cell__ft">@Model.FinishAt?.ToString("yyyy-MM-dd")</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script>
+        $(function () {
+            FastClick.attach(document.body);
+        });
+    </script>
+</body>
+
+</html>

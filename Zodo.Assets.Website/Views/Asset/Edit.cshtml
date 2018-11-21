@@ -1,0 +1,238 @@
+﻿@model Zodo.Assets.Core.Asset
+@using Newtonsoft.Json;
+@{
+    ViewBag.Title = Model.Id > 0 ? "编辑资产信息" : "资产登记";
+    var accountsJson = JsonConvert.SerializeObject(ViewBag.Accounts);
+}
+
+<div class="container-980">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.Id)
+        <div class="form-box-title">@ViewBag.Title</div>
+        <div class="form-box">
+            <div class="row">
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 所属类别</div>
+                    <div class="control">
+                        <select asp-for="AssetCateId" asp-items="ViewBag.Cates" isvalid="yes" checkexpession="NotNull">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label">资产编号</div>
+                    <div class="control">
+                        <input asp-for="Code" type="text" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div id="popLt">
+                        <object id="view1" type="application/x-eloamplugin" width="260" height="360" name="view"></object>
+                        <div class="row">
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid" onclick="Left()" value="左转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid" onclick="Right()" value="右转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-green btn-fluid" name="name" value="初始化" onclick="InitLt()" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-blue btn-fluid" value="扫描并上传" id="scan" onclick="Scan(scanFinishedFn)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 资产名称</div>
+                    <div class="control">
+                        <input asp-for="Name" type="text" isvalid="yes" checkexpession="NotNull" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 购入日期</div>
+                    <div class="control">
+                        <input asp-for="AssignDate" type="date" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 采购来源</div>
+                    <div class="control">
+                        <input asp-for="Source" type="text" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 购入金额</div>
+                    <div class="control">
+                        <input asp-for="Price" type="number" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 状态</div>
+                    <div class="control">
+                        <select asp-for="State" asp-items="ViewBag.States">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 健康度</div>
+                    <div class="control">
+                        <select asp-for="Healthy" asp-items="ViewBag.Healthy">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                @if (Model.Id == 0)
+                {
+                    <div class="col-4">
+                        <div class="label">所在部门</div>
+                        <div class="control">
+                            <select asp-for="DeptId" asp-items="ViewBag.Depts" disabled="@Model.Id>0">
+                                <option value="">请选择</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="label">当前使用人</div>
+                        <div class="control">
+                            <select asp-for="AccountId" disabled="@Model.Id>0">
+                                <option value="">请选择</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-4">
+                        <div class="label">所在部门</div>
+                        <div class="control">
+                            <input type="text" readonly="readonly" value="@ViewBag.DeptName" />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="label">当前使用人</div>
+                        <div class="control">
+                            <input type="text" readonly="readonly" value="@ViewBag.AccountName" />
+                        </div>
+                    </div>
+                }
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 所在位置</div>
+                    <div class="control">
+                        <input asp-for="Position" type="text" />
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-4">
+                    <div class="label">品牌</div>
+                    <div class="control">
+                        <input asp-for="Band" type="text" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label">型号</div>
+                    <div class="control">
+                        <input asp-for="Model" type="text" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label">序列号</div>
+                    <div class="control">
+                        <input asp-for="Imei" type="text" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="label">备注</div>
+                    <div class="control">
+                        <textarea asp-for="Remark"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="label">资产图片</div>
+                    <div class="control">
+                        <input type="button" value="高拍仪" onclick="openScan()" />
+                        <div id="pic" data-count="5" data-url="/Upload/Image"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="form-box-foot content-center">
+            <input type="submit" value="提交" class="btn btn-green" />
+            <input id="btn-closeSelf" type="button" value="关闭" class="btn btn-red btn-close" onclick="myUI.closeSelf('tab')" />
+        </div>
+    }
+</div>
+
+
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script src="~/lib/myui/myImageUploader.js"></script>
+    <script src="~/lib/liangtian/ltScanner.js"></script>
+    <script>
+        myUI.initForm({
+            pageType: 'tab'
+        });
+
+        var pics = $("#pic").MultiImageUploader({
+            valueFormName: "Pics",
+            value: "@Model.Pics"
+        });
+
+        var accounts = @Html.Raw(accountsJson);
+        var accountId = @Model.AccountId;
+
+        function calcAccountDropdowList() {
+            var deptId = $('#DeptId').val();
+            var dom = $('#AccountId');
+            dom.html('');
+            var html = '<option value="">请选择</option>';
+            accounts.forEach(function (item, idx) {
+                if (!deptId || item.DeptId == deptId) {
+                    html += '<option value="' + item.Id + '" ' + ((accountId && accountId == item.Id) ? ' selected ' : '') + '>' + item.Name + '</option>';
+                }
+            });
+            dom.html(html);
+        }
+
+        $(function () {
+            $('#DeptId').on('change', function () {
+                calcAccountDropdowList();
+            });
+
+            if ($('#DeptId').val()) {
+                $('#DeptId').trigger('change');
+            }
+        });
+
+        function scanFinishedFn(response) {
+            if (response.code == 200) {
+                pics.add(response.body);
+            } else {
+                alert(response.message);
+            }
+        }
+
+        function openScan() {
+            layer.open({
+                type: 1,
+                title: false,
+                area: ["500px", "420px"],
+                content: $('#popLt')
+            });
+        }
+    </script>
+}

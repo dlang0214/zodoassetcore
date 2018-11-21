@@ -1,0 +1,221 @@
+﻿@model Zodo.Assets.Core.Stock
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>资产信息查询</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+    <style>
+        .list-bottom * {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .list-bottom:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 15px;
+            right: 0;
+            height: 1px;
+            border-top: 1px solid #e5e5e5;
+            color: #e5e5e5;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+            -webkit-transform: scaleY(0.5);
+            transform: scaleY(0.5);
+            z-index: 2;
+        }
+
+        .btn-click {
+            background: transparent;
+            width: 160px;
+            height: 160px;
+            border: 1px #eee solid;
+            color: #ccc;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-left: -80px;
+            margin-top: -80px;
+        }
+    </style>
+</head>
+
+<body ontouchstart class="page-bg">
+    <div class="page__bd">
+        @*<input type="text" id="assetId" />
+        <input type="button" value="获取" id="btn" />*@
+        <input id="btn-submit" type="button" class="btn-click" disabled value="正在加载插件,请稍候">
+    </div>
+
+    <div id="reason" class="weui-popup__container">
+        <input type="hidden" id="stockItemId" />
+        <div class="weui-popup__overlay"></div>
+        <div class="weui-popup__modal">
+            <div class="weui-cells__title">资产信息</div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产编号</div>
+                    <div class="weui-cell__ft" id="assetCode"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">财务编号</div>
+                    <div class="weui-cell__ft" id="financialCode"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产类别</div>
+                    <div class="weui-cell__ft" id="assetCate"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产名称</div>
+                    <div class="weui-cell__ft" id="assetName"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">品牌</div>
+                    <div class="weui-cell__ft" id="band"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">型号</div>
+                    <div class="weui-cell__ft" id="model"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">序列号</div>
+                    <div class="weui-cell__ft" id="imei"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">规格</div>
+                    <div class="weui-cell__ft" id="specification"></div>
+                </div>
+            </div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">使用部门</div>
+                    <div class="weui-cell__ft" id="deptName"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">使用人</div>
+                    <div class="weui-cell__ft" id="accountName"></div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产位置</div>
+                    <div class="weui-cell__ft" id="position"></div>
+                </div>
+            </div>
+            <div class="weui-cells__title">备注</div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd" id="remark"></div>
+                </div>
+            </div>
+            <div class="weui-btn-area">
+                <input id="btn-close" type="button" class="weui-btn weui-btn_warn" value="关闭">
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/js/jquery-weui.min.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        var token = null;
+        $(function () {
+            FastClick.attach(document.body);
+        });
+
+        wx.config({
+            beta: true,// 必须这么写，否则wx.invoke调用形式的jsapi会有问题
+            debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: '@ViewBag.CorpId', // 必填，企业微信的corpID
+            timestamp: @ViewBag.TimeStamp, // 必填，生成签名的时间戳
+            nonceStr: '@ViewBag.Nonce', // 必填，生成签名的随机串
+            signature: '@ViewBag.Signature',// 必填，签名，见附录1
+            jsApiList: [
+                'checkJsApi',
+                'scanQRCode'
+            ]
+        });
+
+        wx.ready(function () {
+            $('#btn-submit').removeAttr('disabled').removeClass('weui-btn_disabled').val('扫描');
+        });
+
+        $('#btn').on('click', function () {
+            var id = $('#assetId').val();
+            scan(id);
+        });
+
+        $('#btn-submit').on('click', function () {
+            wx.scanQRCode({
+                desc: 'scanQRCode desc',
+                needResult: 1, // 默认为0，扫描结果由企业微信处理，1则直接返回扫描结果，
+                scanType: ["qrCode", "barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                success: function (res) {
+                    var result = JSON.parse(res.resultStr);
+                    var id = result.id;
+                    scan(id);
+                },
+                error: function (res) {
+                    if (res.errMsg.indexOf('function_not_exist') > 0) {
+                        alert('版本过低请升级')
+                    }
+                }
+            });
+        });
+
+        function scan(id) {
+            $.get('/WeixinAsset/Load', { id: id }, function (response) {
+                if (response.code === 200) {
+                    $('#assetCode').html(response.body.assetCode);
+                    $('#financialCode').html(response.body.financialCode);
+                    $('#assetCate').html(response.body.assetCate);
+                    $('#assetName').html(response.body.assetName);
+                    $('#band').html(response.body.band);
+                    $('#model').html(response.body.model);
+                    $('#imei').html(response.body.imei);
+                    $('#specification').html(response.body.specification);
+                    $('#deptName').html(response.body.deptName);
+                    $('#accountName').html(response.body.accountName);
+                    $('#position').html(response.body.position);
+                    $('#remark').html(response.body.remark || '暂无备注');
+                    $('#reason').popup();
+                    
+                } else {
+                    $.toast("该资产不存在", 'forbidden');
+                }
+            });
+        }
+        
+        $('#btn-close').on('click', function () {
+            $.closePopup();
+        });
+
+        function resetForm() {
+            $('#assetCode').html('');
+            $('#financialCode').html('');
+            $('#assetCate').html('');
+            $('#assetName').html('');
+            $('#band').html('');
+            $('#model').html('');
+            $('#imei').html('');
+            $('#specification').html('');
+            $('#deptName').html('');
+            $('#accountName').html('');
+            $('#position').html('');
+            $('#remark').html('');
+            $.closePopup();
+        }
+    </script>
+</body>
+
+</html>

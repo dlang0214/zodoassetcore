@@ -1,0 +1,185 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>服务申请</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+    <style>
+        .list-bottom * {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .list-bottom:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 15px;
+            right: 0;
+            height: 1px;
+            border-top: 1px solid #e5e5e5;
+            color: #e5e5e5;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+            -webkit-transform: scaleY(0.5);
+            transform: scaleY(0.5);
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body ontouchstart class="page-bg">
+    <div class="page__bd" style="padding-bottom: 60px;">
+        <div id="list"></div>
+        <div id="load-more" class="weui-loadmore weui-loadmore_line" style="display: none;">
+            <span class="weui-loadmore__tips">加载更多</span>
+        </div>
+        <div id="loadding" class="weui-loadmore" style="display: none;">
+            <i class="weui-loading"></i>
+            <span class="weui-loadmore__tips">正在加载</span>
+        </div> 
+    </div>
+    <div class="bottom-fixed-2">
+        <div class="weui-flex">
+            <div class="weui-flex__item">
+                <div class="weui-btn-area">
+                    <a id="btn-create" class="weui-btn weui-btn_primary" href="/ServiceApply/Create">创建申请</a>
+                </div>
+            </div>
+            <div class="weui-flex__item">
+                <div class="weui-btn-area">
+                    <a id="btn-refresh" class="weui-btn weui-btn_default" href="javascript:;">刷新列表</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/js/jquery-weui.min.js"></script>
+    <script src="~/lib/art-template/dist/template-web.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+
+    <script id="templ" type="text/html">
+        {{if body.length == 0}}
+        <div class="weui-loadmore weui-loadmore_line">
+            <span class="weui-loadmore__tips">暂无数据</span>
+        </div>
+        {{else}}
+        {{each body val index}}
+        <div class="weui-panel weui-panel_access">
+            <div class="weui-panel__hd">
+                <div class="weui-flex">
+                    <div class="weui-flex__item">{{val.applyAt}}</div>
+                    <div class="weui-flex__item content-right">期望完成于：{{val.requireCompleteAt}}</div>
+                </div>
+            </div>
+            <div class="weui-panel__bd">
+                <a href="/ServiceApply/Details/{{val.id}}" class="weui-media-box weui-media-box_appmsg">
+                    <div class="weui-media-box__hd">
+                        {{if val.state==='待处理'}}
+                        <div class="thumb-text bg-red">{{val.userName}}</div>
+                        {{else if val.state==='已接受'}}
+                        <div class="thumb-text bg-orange">{{val.userName}}</div>
+                        {{else if val.state==='待评价'}}
+                        <div class="thumb-text bg-blue">{{val.userName}}</div>
+                        {{else if val.state==='已评价'}}
+                        <div class="thumb-text bg-green">{{val.userName}}</div>
+                        {{else}}
+                        <div class="thumb-text bg-gray">{{val.userName}}</div>
+                        {{/if}}
+                    </div>
+                    <div class="weui-media-box__bd">
+                        <h4 class="weui-media-box__title">
+                            {{val.type}}
+                        </h4>
+                        <p class="weui-media-box__desc">{{val.describe}}</p>
+                    </div>
+                </a>
+            </div>
+            <div class="weui-panel__ft">
+                <div class="weui-cell list-bottom">
+                    <div class="weui-cell__bd">
+                        {{val.deptName || '--'}}
+                    </div>
+
+                    <div class="panel-ft-right">
+                        {{if val.state === '已接受'}}
+                        <div class="weui-cell__bd">{{val.serviceManName}} 已受理</div>
+                        {{else if val.state === '待评价'}}
+                        <div class="weui-cell__bd">{{val.completeAt.substring(5, 16)}} 已完成</div>
+                        {{else if val.state === '已评价'}}
+                        <div class="weui-cell__bd">{{val.score}}</div>
+                        {{else if val.state === '待处理'}}
+                        <div class="weui-cell__bd">待处理</div>
+                        {{else}}
+                        <div class="weui-cell__bd">无效状态</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+        {{/if}}
+    </script>
+
+    <script>
+        var pageIndex = 0;
+        var dom_load_more = $('#load-more');
+        var dom_loadding = $('#loadding');
+
+        function getData() {
+            $.ajax({
+                url: '/ServiceApply/Get',
+                data: { id: ++pageIndex },
+                beforeSend: function () {
+                    dom_load_more.hide();
+                    dom_loadding.show();
+                },
+                success: function (response) {
+                    if (response.code === 200) {
+                        if (response.body.length > 0) {
+                            var html = template('templ', response);
+                            $('#list').append(html);
+                        } else {
+                            $.toast('已无更多数据', 'text');
+                            pageIndex = pageIndex - 1;
+                        }
+                    } else {
+                        $.toast(response.message, 'text');
+                    }
+                },
+                error: function () {
+                    $.toast('数据加载失败', 'text');
+                },
+                complete: function () {
+                    dom_load_more.show();
+                    dom_loadding.hide();
+                }
+            });
+        }
+
+        $(function () {
+            getData();
+
+            dom_load_more.on('click', function () {
+                getData();
+            });
+
+            $(document).on('click', '#btn-refresh', function () {
+                window.location.reload();
+            });
+        });
+    </script>
+</body>
+
+</html>

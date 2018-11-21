@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="../lib/jquery/jquery.min.js"></script>
+</head>
+<body>
+    <input type="button" value="获取列表" onclick="getList()" />
+
+    <script>
+        function getList() {
+            $.get('/ServiceApply/Get', {}, function (response) {
+                console.log(response);
+            });
+        }
+    </script>
+</body>
+</html>

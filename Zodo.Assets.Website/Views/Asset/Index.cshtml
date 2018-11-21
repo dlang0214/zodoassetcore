@@ -1,0 +1,234 @@
+﻿@using Newtonsoft.Json;
+
+@{
+    ViewData["Title"] = "资产管理";
+    var accountsJson = JsonConvert.SerializeObject(ViewBag.Accounts);
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <form id="form" onsubmit="return false" ;>
+            <div class="toolbar row">
+                <div class="col-8">
+                    <a id="btn-create"
+                       href="javascript:;"
+                       data-action="/Asset/Edit"
+                       data-type="tab"
+                       data-options='{"title": "创建资产", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-green btn-customer"><i class="fa fa-plus-square"></i>添加</a>
+                    <a id="btn-edit"
+                       href="javascript:;"
+                       data-action="/Asset/Edit"
+                       data-type="tab"
+                       data-grid="grid"
+                       data-options='{"title": "修改资产信息", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-blue btn-customer"><i class="fa fa-pencil-square"></i>修改</a>
+
+                    <div class="btn-group">
+                        <a id="btn-move"
+                           href="javascript:;"
+                           data-action="/Asset/Move"
+                           data-type="tab"
+                           data-grid="grid"
+                           data-options='{"title": "资产调配", "width": 720, "height": 400, "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-truck"></i>调配</a>
+                        <a id="btn-loan"
+                           href="javascript:;"
+                           data-action="/Asset/Loan"
+                           data-type="tab"
+                           data-grid="grid"
+                           data-options='{"title": "资产借出", "width": 720, "height": 400, "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-cubes"></i>借出</a>
+                        <a id="btn-recovery"
+                           href="javascript:;"
+                           data-action="/Asset/Maintain"
+                           data-type="tab"
+                           data-grid="grid"
+                           data-options='{"title": "资产维修", "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-recycle"></i>维修</a>
+                        <a id="btn-recovery"
+                           href="javascript:;"
+                           data-action="/Asset/Recovery"
+                           data-type="tab"
+                           data-grid="grid"
+                           data-options='{"title": "资产回收", "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-recycle"></i>回收</a>
+                        <a id="btn-detail"
+                           href="javascript:;"
+                           data-action="/Asset/Details"
+                           data-type="blank"
+                           data-grid="grid"
+                           data-options='{"title": "资产详情", "width": 720, "height": 400, "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-leaf"></i>详情</a>
+                        <a id="btn-qrCode"
+                           href="javascript:;"
+                           data-action="/Asset/QrCode"
+                           data-type="blank"
+                           data-grid="grid"
+                           data-options='{"title": "资产标签", "before": null, "width": 420, "height": 300}'
+                           class="btn btn-success btn-customer"><i class="fa fa-vcard"></i>标签</a>
+                    </div>
+
+                    <a id="btn-delete"
+                       href="javascript:;"
+                       data-action="/Asset/Scrap"
+                       data-type="tab"
+                       data-grid="grid"
+                       data-options='{"title": "资产报废", "before": null}'
+                       class="btn btn-red btn-customer"><i class="fa fa-trash-o"></i>报废</a>
+
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-4 content-right">
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                    <a href="javascript:;" class="btn btn-default search-toggle-button"><i class="fa fa-filter"></i>高级筛选</a>
+                </div>
+            </div>
+            <div id="search-box" class="search-box">
+                <div class="caret-h"></div>
+                <div class="search-box-body form-box">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-4 form-box-cell">
+                            <div class="label">资产类型</div>
+                            <div class="control">
+                                <select id="cateId" name="CateId" asp-items="ViewBag.Cates">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">状态</div>
+                            <div class="control">
+                                <select id="state" name="State" asp-items="ViewBag.States">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">健康度</div>
+                            <div class="control">
+                                <select id="healty" name="Healthy" asp-items="ViewBag.Healthy">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">所在部门</div>
+                            <div class="control">
+                                <select id="deptId" name="DeptId" asp-items="ViewBag.Depts">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">当前使用人</div>
+                            <div class="control">
+                                <select id="accountId" name="AccountId">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">采购日期</div>
+                            <div class="control row">
+                                <div class="col-6">
+                                    <input type="date" name="AssignDateStart" value="" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" name="AssignDateEnd" value="" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+{
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var accounts = @Html.Raw(accountsJson);
+        var grid = $('#list').MyGrid({
+            api: '/Asset/Get',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                {
+                    title: '状态', do: function (item) {
+                        switch (item.state) {
+                            case '使用中':
+                                return '<span class="btn btn-mini btn-green">使用</span>';
+                            case '借出':
+                                return '<span class="btn btn-mini btn-orange">借出</span>';
+                            case '闲置':
+                                return '<span class="btn btn-mini btn-default">闲置</span>';
+                            case '报废':
+                                return '<span class="btn btn-mini btn-red">报废</span>';
+                            case '维修':
+                                return '<span class="btn btn-mini btn-success">维修</span>';
+                            case '租赁':
+                                return '<span class="btn btn-mini btn-info">租赁</span>';
+                            default:
+                                return "--";
+                        }
+                    }, width: 90
+                },
+                { title: '所属类别', field: 'assetCate', width: 120 },
+                { title: '资产编号', field: 'code', width: 90 },
+                { title: '财务编号', field: 'financialCode', width: 90 },
+                { title: '资产名称', field: 'name', width: 180 },
+                { title: '品牌', field: 'band', width: 90 },
+                { title: '型号', field: 'model', width: 120 },
+                { title: '序列号', field: 'imei', width: 120 },
+                { title: '规格', field: 'specification', width: 120 },
+                { title: '健康度', field: 'healthy', width: 90 },
+                { title: '所在部门', field: 'deptName', width: 90 },
+                { title: '当前使用人', field: 'accountName', width: 90 },
+                { title: '所在位置', field: 'position' },
+                { title: '采购日期', field: 'assignDate', width: 90 }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-detail').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+
+        function calcAccountDropdowList() {
+            var deptId = $('#deptId').val();
+            var dom = $('#accountId');
+            dom.html('');
+            var html = '<option value="">请选择</option>';
+            accounts.forEach(function (item, idx) {
+                if (item.DeptId == deptId) {
+                    html += '<option value="' + item.Id + '">' + item.Name + '</option>';
+                }
+            });
+            dom.html(html);
+        }
+
+        $(function () { 
+            $('#deptId').on('change', function () {
+                calcAccountDropdowList();
+            });
+            
+            calcAccountDropdowList();
+        });
+    </script>
+}

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.50.5" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HZC.Infrastructure\HZC.Infrastructure.csproj" />
+    <ProjectReference Include="..\HZC.SearchUtil\HZC.SearchUtil.csproj" />
+  </ItemGroup>
+
+</Project>

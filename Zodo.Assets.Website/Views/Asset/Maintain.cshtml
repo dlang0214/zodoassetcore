@@ -1,0 +1,177 @@
+﻿@model Zodo.Assets.Core.Maintain
+
+@{
+    ViewBag.Title = "资产维修";
+}
+
+<div class="container-980">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        <h3 class="form-box-title">@ViewBag.Title</h3>
+        <div class="form-box row">
+            <div class="col-4">
+                <div class="label">资产编号</div>
+                <div class="control">
+                    <input type="hidden" asp-for="AssetId" />
+                    @Html.TextBoxFor(model => model.AssetCode, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">资产名称</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.AssetName, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">资产状态</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.OrigState, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">资产品牌</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.Band, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">资产型号</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.Model, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">资产序列号</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.Imei, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">使用部门</div>
+                <div class="control">
+                    @Html.HiddenFor(model => model.DeptId)
+                    @Html.TextBoxFor(model => model.DeptName, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">使用人</div>
+                <div class="control">
+                    @Html.HiddenFor(model => model.AccountId)
+                    @Html.TextBoxFor(model => model.AccountName, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">所在位置</div>
+                <div class="control">
+                    @Html.TextBoxFor(model => model.Position, new { @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label">问题描述</div>
+                <div class="control">
+                    @Html.TextAreaFor(model => model.Describe)
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="label">申请人</div>
+                <div class="control">
+                    @Html.HiddenFor(model => model.RepairMan)
+                    @Html.TextBoxFor(model => model.RepairManName)
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="label">申请时间</div>
+                <div class="control">
+                    <input asp-for="RepairAt" type="date" />
+                </div>
+            </div>
+            <div class="col-12 blank-10"></div>
+            <hr />
+            <div class="col-4">
+                <div class="label">维修人</div>
+                <div class="control">
+                    @Html.HiddenFor(model => model.ServiceMan)
+                    @Html.TextBoxFor(model => model.ServiceManName)
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">维修结果</div>
+                <div class="control">
+                    <select asp-for="ServiceResult">
+                        <option value="维修中">维修中</option>
+                        <option value="维修完成">维修完成</option>
+                        <option value="更换配件">更换配件</option>
+                        <option value="无法修复">无法修复</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">维修费用</div>
+                <div class="control">
+                    <input type="number" asp-for="ServicePrice" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">维修开始于</div>
+                <div class="control">
+                    <input asp-for="ServiceStartAt" type="date" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">维修结束于</div>
+                <div class="control">
+                    <input asp-for="ServiceFinishAt" type="date" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="label">满意度</div>
+                <div class="control">
+                    <select asp-for="Satisfaction">
+                        <option value="待评价">待评价</option>
+                        <option value="非常满意">非常满意</option>
+                        <option value="满意">满意</option>
+                        <option value="不满意">不满意</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label">备注</div>
+                <div class="control">
+                    @Html.TextAreaFor(model => model.Remark)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="form-box-foot row">
+            <div class="col-12 content-center">
+                <input type="submit" value="提交" class="btn btn-blue" />
+                <input id="btn-closeSelf" type="button" value="关闭" onclick="myUI.closeSelf('tab')" class="btn btn-red btn-close" />
+            </div>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        myUI.initForm({
+            pageType: 'tab'
+        });
+
+        $(function () {
+            $('#assetCode').on('change', function () {
+                var code = $(this).val();
+                if (code) {
+                    $.get('/Asset/LoadByCode', { code: code }, function (resp) {
+                        if (resp.code === 200) {
+                            // 填充表单
+                        } else {
+                            layer.msg('加载资产失败，请手动填写资产内容');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<Zodo.Assets.Application.AssetDto>
+@{
+    ViewData["Title"] = "Assets";
+}
+
+<div class="container-page">
+    <h3 class="form-box-title">员工资产列表 - @ViewBag.AccountName</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>编号</th>
+                <th>资产名称</th>
+                <th>使用部门</th>
+                <th>使用人</th>
+                <th>状态</th>
+                <th>健康度</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count() > 0)
+            {
+            @foreach (var asset in Model)
+            {
+                <tr data-id="@asset.Id">
+                    <td>@asset.Code</td>
+                    <td>@asset.Name</td>
+                    <td>@asset.DeptName</td>
+                    <td>@asset.AccountName</td>
+                    <td>@asset.State</td>
+                    <td>@asset.Healthy</td>
+                </tr>
+            }
+            }
+            else
+            { 
+                <tr class="empty">
+                    <td colspan="6">暂无数据</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script>
+        $(function () { 
+            $("tr").on('dblclick', function () { 
+                var id = $(this).data("id");
+                var url = '/Asset/Details/' + id;
+                myUI.popIframe(url, '资产详情', 720, 420);
+            });
+        });
+    </script>
+}

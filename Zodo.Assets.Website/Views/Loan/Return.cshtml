@@ -1,0 +1,152 @@
+﻿@model Zodo.Assets.Core.Loan
+@{
+    ViewData["Title"] = "资产归还";
+    string accountsJson = string.Empty;
+}
+<div class="container container-page">
+    <form asp-action="Return" onsubmit="return confirm('确认操作？')">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="AssetId" />
+        <input type="hidden" asp-for="Id" />
+        <h3 class="form-box-title">【@Model.AssetCode】@Model.AssetName</h3>
+
+        <table class="table-search">
+            <tr>
+                <td class="label">原使用部门</td>
+                <td class="control">
+                    <input type="text" asp-for="FromDeptName" readonly />
+                </td>
+                <td class="label">原使用人</td>
+                <td class="control">
+                    <input type="text" asp-for="FromAccountName" readonly />
+                </td>
+                <td rowspan="6">
+                    <div id="popLt" style="padding: 7px 0 0 20px;">
+                        <object id="view1" type="application/x-eloamplugin" width="100%" height="240" name="view"></object>
+                        <div class="row">
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid btn-mini" onclick="Left()" value="左转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid btn-mini" onclick="Right()" value="右转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-green btn-fluid btn-mini" name="name" value="初始化" onclick="InitLt()" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-blue btn-fluid btn-mini" value="扫描上传" id="scan" onclick="Scan(scanFinishedFn)" />
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">当前使用部门</td>
+                <td class="control">
+                    <input type="hidden" asp-for="FromDeptId" />
+                    <input type="text" asp-for="TargetDeptName" readonly />
+                </td>
+                <td class="label">当前使用人</td>
+                <td class="control">
+                    <input type="hidden" asp-for="FromAccountId" />
+                    <input type="text" asp-for="TargetAccountName" readonly />
+                </td>
+            </tr>
+            <tr>
+                <td class="label">借出日期</td>
+                <td class="control">
+                    <input type="text" value="@Model.LoanAt.ToString("yyyy-MM-dd")" readonly />
+                </td>
+                <td class="label">预计归还日期</td>
+                <td class="control">
+                    <input type="text" value="@Model.ExpectedReturnAt.ToString("yyyy-MM-dd")" readonly />
+                </td>
+            </tr>
+            <tr>
+                <td class="label">当前位置</td>
+                <td class="control" colspan="3"><input type="text" asp-for="FromPosition" readonly /></td>
+            </tr>
+            <tr>
+                <td colspan="4"><hr /></td>
+            </tr>
+            @if (!Model.IsReturn)
+            {
+                <tr>
+                    <td class="label"><span class="text-red">*</span> 归还日期</td>
+                    <td class="control">
+                        <input type="date" asp-for="ReturnAt" />
+                    </td>
+                    <td class="label"></td>
+                    <td class="control"></td>
+                </tr>
+                <tr>
+                    <td class="label">图片</td>
+                    <td class="control" colspan="3">
+                        <div id="pic" data-count="5" data-url="/Upload/Image"></div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td class="label"><span class="text-red">*</span> 归还日期</td>
+                    <td class="control">
+                        <input type="date" asp-for="ReturnAt" readonly />
+                    </td>
+                    <td class="label"></td>
+                    <td class="control"></td>
+                </tr>
+                <tr>
+                    <td class="label">图片</td>
+                    <td class="control" colspan="3">
+                        <pics val="@Model.Pics"></pics>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6"><hr /></td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-xl text-red content-center">该资产已归还，无需操作</td>
+                </tr>
+            }
+        </table>
+        <hr />
+        @if (Model.IsReturn)
+        {
+            <div class="form-box-foot content-center">
+                <input type="submit" class="btn btn-green" disabled value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" onclick="myUI.closeSelf('tab')" />
+            </div>
+        }
+        else
+        {
+            <div class="form-box-foot content-center">
+                <input type="submit" class="btn btn-green" value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" />
+            </div>
+        }
+    </form>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script src="~/lib/myui/myImageUploader.js"></script>
+    <script src="~/lib/liangtian/ltScanner.js"></script>
+    <script>
+        myUI.initForm({
+            pageType: 'tab'
+        });
+
+        var pics = $("#pic").MultiImageUploader({
+            valueFormName: "Pics",
+            value: "@Model.Pics"
+        });
+
+        function scanFinishedFn(response) {
+            if (response.code == 200) {
+                pics.add(response.body);
+            } else {
+                alert(response.message);
+            }
+        }
+    </script>
+}

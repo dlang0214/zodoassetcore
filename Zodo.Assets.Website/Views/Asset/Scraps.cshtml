@@ -1,0 +1,90 @@
+﻿@using Newtonsoft.Json;
+
+@{
+    ViewData["Title"] = "资产管理";
+    var accountsJson = JsonConvert.SerializeObject(ViewBag.Accounts);
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <form id="form" onsubmit="return false" ;>
+            @Html.AntiForgeryToken()
+            <div class="toolbar row">
+                <div class="col-8">
+                    <div class="btn-group">
+                        <a id="btn-detail"
+                           href="javascript:;"
+                           data-action="/Asset/Details"
+                           data-type="blank"
+                           data-grid="grid"
+                           data-options='{"title": "资产详情", "width": 720, "height": 400, "before": null}'
+                           class="btn btn-success btn-customer"><i class="fa fa-pencil-square"></i>详情</a>
+                    </div>
+
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-4 content-right">
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var accounts = @Html.Raw(accountsJson);
+        var grid = $('#list').MyGrid({
+            api: '/Asset/GetScrapts',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 }, {
+                    title: '状态', do: function (item) {
+                        switch (item.state) {
+                            case '使用中':
+                                return '<span class="btn btn-mini btn-green">使用</span>';
+                            case '借出':
+                                return '<span class="btn btn-mini btn-orange">借出</span>';
+                            case '闲置':
+                                return '<span class="btn btn-mini btn-default">闲置</span>';
+                            case '报废':
+                                return '<span class="btn btn-mini btn-red">报废</span>';
+                            case '维修':
+                                return '<span class="btn btn-mini btn-orange">维修</span>';
+                            case '租赁':
+                                return '<span class="btn btn-mini btn-info">租赁</span>';
+                            default:
+                                return "--";
+                        }
+                    }, width: 90
+                },
+                { title: '所属类别', field: 'assetCate', width: 120 },
+                { title: '资产编号', field: 'code', width: 90 },
+                { title: '资产名称', field: 'name', width: 180 },
+                { title: '健康度', field: 'healthy', width: 90 },
+                { title: '部门', field: 'deptName', width: 90 },
+                { title: '使用人', field: 'accountName', width: 90 }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-detail').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+        
+    </script>
+}

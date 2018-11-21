@@ -1,0 +1,127 @@
+﻿
+@{
+    ViewData["Title"] = "DeptAndAccount";
+}
+@section head {
+<style>
+    .user-label li {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        margin: 2px;
+        border: 1px #eee dashed;
+        letter-spacing: 0.1em;
+        font-weight: bold;
+        background-color: #fffdf5;
+        cursor: pointer;
+    }
+
+    .user-label li.active {
+        border: 1px #f7c1a5 dashed;
+        background-color: #faf0ec;
+        color: #8b540f;
+    }
+    </style>
+}
+<div class="container-col-group">
+    <div class="col-4 col-group-item">
+        <div class="col-header">部门</div>
+        <div class="col-body">
+            <div class="tree" id="tree"></div>
+        </div>
+    </div>
+
+    <div class="col-8 col-group-item">
+        <div class="col-header">员工</div>
+        <div class="col-body">
+            <div class="toolbar row" style="border-bottom: 1px #eee solid; margin-bottom: 5px; padding-bottom: 5px;">
+                <div class="col-4">
+                    <input type="button" class="btn btn-red" value="清空选择" onclick="clear()" />
+                </div>
+                <div class="col-8 content-right">
+                    <form id="form1" onsubmit="return false;">
+                        <input type="hidden" name="Dept" id="dept" />
+                        <input type="search" name="Key" value="" placeholder="员工姓名" />
+                        <input type="button" class="btn btn-blue" value="查找" onclick="loadAccounts()" />
+                        <input type="button" class="btn btn-green" value="选中" onclick="ok()" />
+                    </form>
+                </div>
+            </div>
+
+            <div id="list-box" style="overflow: auto;">
+                <ul class="row user-label" id="list">
+                    <li class="col-12 empty">暂无数据</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script src="~/lib/myui/myTree.V2.js"></script>
+    <script>
+        var selected = {
+            dept: null,
+            account: null
+        };
+
+        var tree = $('#tree').TreeView({
+            api: '/Select/DeptTree',
+            text: 'name',
+            value: 'id',
+            onClick: function (item) {
+                deptSelected(item);
+            }
+        });
+
+        $('#list-box').height($(window).height() - 120);
+
+        function deptSelected(dept) {
+            if (selected.dept === dept) {
+                return;
+            } else {
+                selected.dept = dept;
+                selected.account = null;
+                $('#dept').val(dept.id);
+
+                loadAccounts();
+            }
+        }
+
+        function loadAccounts() { 
+            $.get('/Select/Accounts', $('#form1').serialize(), function (response) {
+                var html = '';
+                if (response.code == 200 && response.body && response.body.length > 0) {
+                    $.each(response.body, function (idx, item) {
+                        html += '<li class="col-3" data-value="' + item.id + '">' + item.name + '</li>';
+                    });
+                } else {
+                    html = '<li class="col-12 empty">暂无数据</li>';
+                }
+                $('#list').html(html);
+            });
+        }
+
+        $(function () { 
+            tree.render();
+            $('#list').on('click', 'li:not(.empty)', function () {
+                $(this).addClass('active').siblings().removeClass('active');
+                var account = { id: $(this).data('value'), name: $(this).text() };
+                selected.account = account;
+            });
+        });
+
+        function ok() {
+            return parent.deptAndAccountSelected(selected);
+        }
+
+        function clear() {
+            selected = {
+                dept: null,
+                account: null
+            };
+            return ok();
+        }
+    </script>
+}

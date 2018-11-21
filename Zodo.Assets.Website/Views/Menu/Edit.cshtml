@@ -1,0 +1,72 @@
+﻿@model Zodo.Assets.Core.Menu
+
+@{
+    ViewData["Title"] = Model.Id > 0 ? "编辑菜单信息" : "创建菜单信息";
+}
+
+<div class="form-box-fixed-container">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <h3 class="form-box-title">@ViewData["Title"]</h3>
+        <div class="form-box row">
+            <input type="hidden" asp-for="Id" />
+            <div class="col-6">
+                <div class="label">上级菜单</div>
+                <div class="control">
+                    <select asp-for="ParentId" asp-items="ViewBag.Parents">
+                        <option value="0">一级菜单</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="label">菜单名称</div>
+                <div class="control">
+                    <input asp-for="Name" class="form-control" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="label">图标</div>
+                <div class="control">
+                    <input asp-for="Icon" class="pop-select-iframe" data-url="/html/iconSelector.html" readonly id="icon" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="label">排序</div>
+                <div class="control">
+                    <input asp-for="Sort" class="form-control" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label">链接</div>
+                <div class="control">
+                    <input asp-for="Url" class="form-control" />
+                </div>
+            </div>
+            <hr />
+            <div class="col-12">
+                <div class="text-red" style="padding-left: 25px;">
+                    注意：不能将菜单的上级调整为其下属菜单，不然会在调用链中出现断层，导致菜单无法显示。
+                </div>
+            </div>
+        </div>
+        <div class="form-box-foot row">
+            <div class="col-7">
+                <div class="label text-red">&nbsp;</div>
+            </div>
+            <div class="col-5 content-right">
+                <input type="submit" class="btn btn-green" value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" />
+            </div>
+        </div>
+    </form>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        myUI.initForm();
+        function onIconSelect(val) {
+            layer.closeAll();
+            $("#icon").val("fa " + val);
+        }
+    </script>
+}

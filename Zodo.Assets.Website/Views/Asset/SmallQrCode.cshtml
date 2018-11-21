@@ -1,0 +1,89 @@
+﻿@model Zodo.Assets.Application.AssetDto
+
+@using Newtonsoft.Json;
+
+@{
+    ViewData["Title"] = "QrCode";
+    //var json = JsonConvert.SerializeObject(Model);
+    var json = string.Join("|", (new string[] { Model.Id.ToString(), Model.Code }));
+    var imgSrc = "/upload/qrcodes/" + Model.Id.ToString() + ".jpg";
+}
+
+@section head {
+    <style>
+        .print-box {
+            margin: 20px auto;
+            width: 190px;
+            height: 95px;
+            position: relative;
+            border: 1px #f3f3f3 solid;
+            box-shadow: 1px 1px 3px #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+            .print-box .img-box {
+                position: absolute;
+                width: 80px;
+                height: 80px;
+                left: 8px;
+                top: 8px;
+            }
+
+                .print-box .img-box img {
+                    width: 76px;
+                    height: 76px;
+                }
+
+            .print-box .content-box {
+                position: absolute;
+                left: 95px;
+                top: 8px;
+            }
+
+                .print-box .content-box li {
+                    line-height: 16px;
+                    font-size: 14px;
+                    margin-bottom: 4px;
+                }
+
+            .print-box h3 {
+                font-size: 20px;
+                font-weight: bold;
+                line-height: 30px;
+                text-align: center;
+                letter-spacing: 0.1em;
+            }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            .print-box {
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+}
+<!--startprint-->
+<div class="print-box" id="print-box">
+    <div class="img-box">
+        <img src="@imgSrc" alt="@Model.Name" />
+    </div>
+    
+    <ul class="content-box">
+        <li>资产编号</li>
+        <li>@Model.Code</li>
+        <li>使用部门</li>
+        <li>@Model.DeptName</li>
+    </ul>
+</div>
+<!--endprint-->
+<div class="no-print content-center">
+    <hr />
+    <input type="button" class="btn btn-red" onclick="window.close()" value="关闭" />
+    <input type="button" class="btn btn-blue" onclick="window.print()" value="打印标签" />
+</div>

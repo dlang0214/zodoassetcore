@@ -1,0 +1,78 @@
+﻿@model List<Zodo.Assets.Application.AssetCateDto>
+
+@{
+    ViewData["Title"] = "资产分类管理";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <div class="toolbar row">
+            <div class="col-6">
+                <a id="btn-create"
+                   href="javascript:;"
+                   data-action="/AssetCate/Edit"
+                   data-type="pop"
+                   data-options='{"title": "创建分类", "width": 420, "before": "getParent"}'
+                   class="btn btn-green btn-customer"><i class="fa fa-plus"></i>创建</a>
+                <a id="btn-edit"
+                   href="javascript:;"
+                   data-action="/AssetCate/Edit"
+                   data-type="pop"
+                   data-grid="grid"
+                   data-options='{"title": "编辑分类", "width": 420}'
+                   class="btn btn-blue btn-customer"><i class="fa fa-pencil-square"></i>修改</a>
+                <a href="javascript:;"
+                   data-action="/AssetCate/Delete"
+                   data-type="ajax"
+                   data-grid="grid"
+                   data-options='{"msg": "确认操作？"}'
+                   class="btn btn-red btn-customer"><i class="fa fa-trash"></i>删除</a>
+                <a href="javascript:;" onclick="window.grid.reload()" class="btn btn-default"><i class="fa fa-refresh"></i>刷新列表</a>
+            </div>
+            <div class="col-6 content-right">
+                <form id="searchform">
+                    @Html.AntiForgeryToken()
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="grid-box" id="grid"></div>
+</div>
+
+@section scripts {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        function getParent(url) {
+            var parent = grid.getSelectedValue();
+            if (parent) {
+                url += '?p=' + parent;
+            }
+            return url;
+        }
+
+        var grid = $('#grid').MyGrid({
+            api: '/AssetCate/Get',
+            type: 'get',
+            height: function () {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                { title: '分类名称', field: 'name', type: 'tree', width: 260 }
+            ],
+            keyColumn: 'id',
+            click: function (item) { },
+            dblClick: function (item) {  
+                $('#btn-edit').trigger('click');
+            },
+            handlers: {},
+            filterFn: function () {
+                return $('#form1').serialize();
+            },
+            multi: false,
+            pager: false,
+            auto: true
+        });
+    </script>
+}

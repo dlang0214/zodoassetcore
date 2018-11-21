@@ -1,0 +1,72 @@
+﻿@model Zodo.Assets.Core.ServiceApply
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>创建申请</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+</head>
+
+<body ontouchstart class="page-bg">
+    <form asp-action="Create">
+        <div class="weui-cells__title">服务类型</div>
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <select asp-for="Type" asp-items="ViewBag.Types" class="weui-select"></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells__title">资产编号（非必填）</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <input type="text" class="weui-input" placeholder="提供资产编号将有助于我们更快的解决问题" asp-for="AssetCode">
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells__title">申请内容</div>
+        <div class="weui-cells">
+            <div class="weui-cell ">
+                <div class="weui-cell__bd">
+                    <textarea rows="6" class="weui-textarea" placeholder="请详细描述您的问题" asp-for="Describe"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells__title">期望完成日期</div>
+        <div class="weui-cells">
+            <div class="weui-cell ">
+                <div class="weui-cell__bd">
+                    <input class="weui-input" type="date" asp-for="RequireCompleteAt" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-btn-area">
+            <input class="weui-btn weui-btn_primary" type="submit" value="提交申请">
+            <a class="weui-btn weui-btn_default" href="/ServiceApply/Index" id="showTooltips">返回列表</a>
+        </div>
+    </form>
+
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/js/jquery-weui.min.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script>
+        $(function () {
+            FastClick.attach(document.body);
+        });
+    </script>
+</body>
+
+</html>

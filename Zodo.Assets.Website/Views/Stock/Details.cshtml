@@ -1,0 +1,107 @@
+﻿@model Zodo.Assets.Core.Stock
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <h1 class="page-title">@Model.Title</h1>
+        <hr />
+        <form id="form" onsubmit="return false" ;>
+            @Html.AntiForgeryToken()
+            <div class="toolbar row">
+                <div class="col-4">
+                    <a id="btn-create"
+                       href="javascript:;"
+                       data-action="/Stock/Create"
+                       data-type="pop"
+                       data-options='{"title": "手动盘点", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-green btn-customer"><i class="fa fa-plus-square"></i>手动盘点</a>
+
+                    <a id="btn-create"
+                       href="javascript:;"
+                       data-action="/StockItem/Select"
+                       data-type="pop"
+                       data-options='{"title": "选择要盘点的资产", "width": 860, "height": 400, "before": null}'
+                       class="btn btn-green btn-customer"><i class="fa fa-plus-square"></i>添加资产</a>
+
+                    <a id="btn-create"
+                       href="javascript:;"
+                       data-action="/Stock/Create"
+                       data-type="pop"
+                       data-options='{"title": "手动盘点", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-green btn-customer"><i class="fa fa-trash"></i>删除</a>
+
+                    <a id="btn-detail"
+                       href="javascript:;"
+                       data-action="/Stock/Details"
+                       data-type="jump"
+                       data-grid="grid"
+                       data-options='{"title": "盘点详情", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-success btn-customer"><i class="fa fa-leaf"></i>详情</a>
+
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-8 content-right">
+                    <input type="hidden" asp-for="Id" />
+                    <select name="deptId" asp-items="ViewBag.Parents">
+                        <option value="">资产所在部门</option>
+                    </select>
+                    <select name="result">
+                        <option value="">盘点结果</option>
+                        <option value="0">未盘点</option>
+                        <option value="1">已盘点</option>
+                        <option value="2">异常状态</option>
+                    </select>
+                    <select name="orderby">
+                        <option value="">排序方式</option>
+                        <option value="">资产编号</option>
+                        <option value="">部门名称</option>
+                        <option value="">使用人名称</option>
+                        <option value="">盘点时间</option>
+                    </select>
+                    <input name="Key" type="search" value="" placeholder="资产名称" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var grid = $('#list').MyGrid({
+            api: '/Stock/Items',
+            columns: [
+                { title: '资产编号', field: 'assetCode', width: 90 },
+                { title: '资产名称', field: 'assetName', width: 120 },
+                { title: '使用部门', field: 'deptName', width: 120 },
+                { title: '使用人', field: 'accountName', width: 80 },
+                { title: '盘点人', field: 'checkor', width: 80, className: 'bg-whiteyellow' },
+                { title: '盘点时间', field: 'checkAt', width: 130, className: 'bg-whiteyellow' },
+                { title: '盘点结果', field: 'checkResult', width: 90, className: 'bg-whiteyellow' },
+                { title: '备注', field: 'remark' }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-detail').trigger('click'); },
+            multi: false,
+            pager: false,
+            auto: true
+        });
+    </script>
+}

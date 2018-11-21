@@ -1,0 +1,67 @@
+﻿@model Zodo.Assets.Website.Models.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>用户登录</title>
+    <link href="~/css/myui.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <div class="img-holder">
+        <img src="~/images/on-line.png" alt="Alternate Text" />
+    </div>
+    <div class="container">
+        <form id="form">
+            @Html.AntiForgeryToken()
+            <div class="inner-box">
+                <h3>用户登录</h3>
+                <div style="background-color: #fff6f6; border: 1px #f6cccc dotted; font-size: 12px; border-radius: 5px; color: red; display: none; margin-bottom: 12px; text-align: center; padding: 4px;" id="error"></div>
+                <div>
+                    <input type="text" name="Name" value="" maxlength="20" placeholder="用户帐号" isvalid="yes" checkexpession="NotNull" id="account" />
+                </div>
+                <div>
+                    <input type="password" name="Pw" value="" maxlength="20" placeholder="密码" isvalid="yes" checkexpession="NotNull" />
+                </div>
+                <div>
+                    <input type="submit" id="btn-submit" value="登录" class="butt" />
+                </div>
+                @*<div style="font-size:12px; color: #999; text-align:center;">
+                        技术支持： 13914258044
+                    </div>*@
+            </div>
+        </form>
+    </div>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        $("#form").on("submit", function (e) {
+            e.preventDefault();
+            if (!$("#form").Validform()) return false;
+
+            $.post("/Login/Login", $(this).serialize(), function (data) {
+                if (data.code == 200) {
+                    top.location.href = "/Home";
+                } else {
+                    showError(data.message);
+                }
+            });
+        });
+
+        function showError(msg) {
+            $("#error").html(msg).show();
+        }
+        $(function () {
+            $("#account").focus().on("click", function () {
+                $(this).select();
+            });
+        });
+    </script>
+</body>
+</html>

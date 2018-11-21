@@ -1,0 +1,53 @@
+﻿@model Zodo.Assets.Website.Models.ChangePwViewModel
+
+@{
+    ViewData["Title"] = "ChangePw";
+}
+
+
+<div class="form-box-fixed-container">
+    <form asp-action="ChangePw">
+        <h3 class="form-box-title">修改密码</h3>
+
+        <div class="form-box row">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="col-12">
+                <div class="label"><label asp-for="OldPw" class="control-label"></label></div>
+                <div class="control">
+                    <input asp-for="OldPw" type="password" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label"><label asp-for="NewPw" class="control-label"></label></div>
+                <div class="control">
+                    <input asp-for="NewPw" type="password" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label">
+                    <label asp-for="RepeatPw" class="control-label"></label>
+                </div>
+                <div class="control">
+                    <input asp-for="RepeatPw" type="password" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-box-foot content-right">
+            <input type="submit" value="提交" class="btn btn-blue" />
+        </div>
+    </form>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/validator/validator.js"></script>
+    @{await Html.PartialAsync("_ValidationScriptsPartial");}
+    <script>
+        myUI.initForm({
+            successFn: function (data) {
+                top.location.href = "/Home/Logout";
+            }
+        });
+    </script>
+}

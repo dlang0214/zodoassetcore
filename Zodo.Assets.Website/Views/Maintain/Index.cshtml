@@ -1,0 +1,131 @@
+﻿@{
+    ViewBag.Title = "Maintain管理";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <form id="form" onsubmit="return false";>
+            <div class="toolbar row">
+                <div class="col-6">
+                    <a id="btn-create"
+                       href="javascript:;"
+                       data-action="/Maintain/Create"
+                       data-type="tab"
+                       data-options='{"title": "创建维修记录", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-green btn-customer"><i class="fa fa-plus-square"></i>添加</a>
+                    <a id="btn-edit"
+                       href="javascript:;"
+                       data-action="/Maintain/Edit"
+                       data-type="tab"
+                       data-grid="grid"
+                       data-options='{"title": "修改维修记录", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-blue btn-customer"><i class="fa fa-pencil-square"></i>修改</a>
+                    @*<a id="btn-details"
+                       href="javascript:;"
+                       data-action="/Maintain/Details"
+                       data-type="blank"
+                       data-grid="grid"
+                       data-options='{"title": "维修详情", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-success btn-customer"><i class="fa fa-pencil-square"></i>详情</a>*@
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-6 content-right">
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" onclick="grid.reload()" value="搜索">
+                    <a href="javascript:;" class="btn btn-default search-toggle-button"><i class="fa fa-filter"></i>高级筛选</a>
+                </div>
+            </div>
+            <div id="search-box" class="search-box">
+                <div class="caret-h"></div>
+                <div class="search-box-body form-box">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-4 form-box-cell">
+                            <div class="label">申请人</div>
+                            <div class="control"><input type="text" name="RepairMan" /></div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">申请时间</div>
+                            <div class="control row">
+                                <div class="col-6">
+                                    <input type="date" name="RepairAtStart" value="" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" name="RepairAtEnd" value="" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 form-box-cell">
+                            <div class="label">维修状态</div>
+                            <div class="control">
+                                <select name="ServiceResult">
+                                    <option value="">不限</option>
+                                    <option value="维修中">维修中</option>
+                                    <option value="维修完成">维修完成</option>
+                                    <option value="更换配件">更换配件</option>
+                                    <option value="无法修复">无法修复</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+{
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var grid = $('#list').MyGrid({
+            api: '/Maintain/Get',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                { title: '申请时间', field: 'repairAt', width: 120 },
+                {
+                    title: '维修结果', do: function (item) {
+                        switch (item.serviceResult) {
+                            case '维修中':
+                                return '<span class="btn btn-mini btn-orange">维修中</span>';
+                            case '维修完成':
+                                return '<span class="btn btn-mini btn-green">维修完成</span>';
+                            case '更换配件':
+                                return '<span class="btn btn-mini btn-success">更换配件</span>';
+                            case '无法修复':
+                                return '<span class="btn btn-mini btn-red">无法修复</span>';
+                        }
+                    }, width: 90
+                },
+                { title: '资产编号', field: 'assetCode', width: 90 },
+                { title: '资产名称', field: 'assetName', width: 120 },
+                { title: '部门名称', field: 'deptName', width: 90 },
+                { title: '使用人', field: 'accountName', width: 90 },
+                { title: '申请人', field: 'repairManName', width: 120 },
+                { title: '维修人', field: 'serviceMan', width: 120 },
+                { title: '维修人姓名', field: 'serviceManName', width: 120 },
+                { title: '维修开始时间', field: 'serviceStartAt', width: 120 },
+                { title: '维修结束时间', field: 'serviceFinishAt', width: 120 },
+                { title: '满意度', field: 'satisfaction', width: 120 }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-edit').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+    </script>
+}
+

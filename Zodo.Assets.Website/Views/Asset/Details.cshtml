@@ -1,0 +1,210 @@
+﻿@model Zodo.Assets.Application.AssetDto
+@{
+    ViewData["Title"] = Model.Name + " - 资产详情";
+    var picUrl = $"/upload/qrcodes/{Model.Id}.jpg";
+}
+<div class="container-page">
+    <h3 class="form-box-title text-bold">
+        @{ 
+            var str = string.IsNullOrWhiteSpace(Model.Code) ? "" : "【" + Model.Code + "】";
+            str = str + Model.Name;
+        }
+        @str
+    </h3>
+    <div class="container-page-body">
+        <table class="table table-bordered table-info">
+            <tr>
+                <td class="label">资产类型</td>
+                <td class="control">@Model.AssetCate</td>
+                <td class="label">财务编号</td>
+                <td class="control">@Model.FinancialCode</td>
+                <td colspan="2" rowspan="5" class="content-center">
+                    @*<img src="@picUrl" alt="二维码" width="160" height="160" />*@
+                    @if (string.IsNullOrWhiteSpace(Model.Cover))
+                    {
+                        <span class="font-gray">暂无图片</span>
+                    }
+                    else
+                    {
+                        <img src="@Model.Cover" alt="资产图片" width="160" height="160" />
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td class="label">状态</td>
+                <td class="control">
+                    @{
+                        var state = "";
+                        switch (Model.State)
+                        {
+                            case "使用中":
+                                state = "<span class='btn btn-mini btn-blue'>" + Model.State + "</span>";
+                                break;
+                            case "闲置":
+                                state = "<span class='btn btn-mini btn-green'>" + Model.State + "</span>";
+                                break;
+                            case "借出":
+                                state = "<span class='btn btn-mini btn-sucess'>" + Model.State + "</span>";
+                                break;
+                            case "报废":
+                                state = "<span class='btn btn-mini btn-red'>" + Model.State + "</span>";
+                                break;
+                            default:
+                                state = "<span class='btn btn-mini btn-default'>" + Model.State + "</span>";
+                                break;
+                        }
+                    }
+                    @Html.Raw(state)
+                </td>
+                <td class="label">健康度</td>
+                <td class="control">@Model.Healthy</td>
+            </tr>
+            <tr>
+                <td class="label">采购日期</td>
+                <td class="control">
+                    @{
+                        string assignTime = "";
+                        if (Model.AssignDate != null)
+                        {
+                            assignTime = ((DateTime)Model.AssignDate).ToString("yyyy年MM月dd日");
+                        }
+                    }
+                    @assignTime
+                </td>
+                <td class="label">采购来源</td>
+                <td class="control">@Model.Source</td>
+            </tr>
+            <tr>
+                <td class="label">使用单位</td>
+                <td class="control">@Model.DeptName</td>
+                <td class="label">使用人</td>
+                <td class="control">@Model.AccountName</td>
+            </tr>
+            <tr>
+                <td class="label">所在位置</td>
+                <td colspan="3">@Model.Position</td>
+            </tr>
+            <tr>
+                <td class="label">品牌</td>
+                <td class="control">@Model.Band</td>
+                <td class="label">型号</td>
+                <td class="control">@Model.Model</td>
+                <td class="label">序列号</td>
+                <td class="control">@Model.Imei</td>
+            </tr>
+            <tr>
+                <td class="label">备注</td>
+                <td colspan="5">@Model.Remark</td>
+            </tr>
+            <tr>
+                <td class="label">图片</td>
+                <td colspan="5">
+                    <Pics Val="@Model.Pics"></Pics>
+                </td>
+            </tr>
+        </table>
+        <div class="blank-10"></div>
+        <h4 class="content-center">操作历史</h4>
+        <div class="blank-10"></div>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>操作日期</th>
+                    <th>操作</th>
+                    <th>原部门</th>
+                    <th>原使用人</th>
+                    <th>目标部门</th>
+                    <th>目标使用人</th>
+                </tr>
+            </thead>
+            <tbody id="logBody"></tbody>
+        </table>
+        @if (!string.IsNullOrWhiteSpace(Model.Code))
+        {
+            <div class="blank-10"></div>
+            <h4 class="content-center">维修历史</h4>
+            <div class="blank-10"></div>
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>申请人</th>
+                        <th>申请部门</th>
+                        <th>申请时间</th>
+                        <th>问题描述</th>
+                        <th>受理人</th>
+                        <th>受理结果</th>
+                        <th>原因分析</th>
+                        <th>解决方案</th>
+                    </tr>
+                </thead>
+                <tbody id="maintainBody"></tbody>
+            </table>
+        }
+    </div>
+</div>
+@section scripts {
+    <script>
+        $(function () { 
+            $.get('/Asset/GetAssetLogs/@Model.Id', {}, function (response) {
+                var html = '';
+                if (response.code === 200 && response.body && response.body.length > 0) {
+                    $.each(response.body, function (idx, item) {
+                        html += '<tr data-id="' + item.id + '">';
+                        html += '<td>' + item.operateAt + '</td>';
+                        if (item.type === '调配') {
+                            html += '<td><span class="btn btn-blue btn-mini">' + item.type + '</span></td>';
+                        } else if (item.type === '借出') {
+                            html += '<td><span class="btn btn-orange btn-mini">' + item.type + '</span></td>';
+                        } else if (item.type === '归还') {
+                            html += '<td><span class="btn btn-green btn-mini">' + item.type + '</span></td>';
+                        } else if (item.type === '报废') {
+                            html += '<td><span class="btn btn-red btn-mini">' + item.type + '</span></td>';
+                        } else {
+                            html += '<td><span class="btn btn-default btn-mini">' + item.type + '</span></td>';
+                        }
+                        html += '<td>' + (item.fromDeptName || '--') + '</td>';
+                        html += '<td>' + (item.fromAccountName || '--')  + '</td>';
+                        html += '<td>' + (item.targetDeptName || '--')  + '</td>';
+                        html += '<td>' + (item.targetAccountName || '--')  + '</td>';
+                        html += '</tr>';
+                    });
+                } else {
+                    html = '<tr><td class="empty" colspan="7">无操作记录</td></tr>';
+                }
+                $('#logBody').html(html);
+            });
+
+            $('#logBody').on('dblclick', 'tr', function () {
+                var url = '/AssetLog/Details/' + $(this).data('id');
+                //url, title, width, height, needValue
+                myUI.popIframe(url, '操作详情', 720, 400, false);
+            });
+
+            $.get('/Asset/GetServiceApplyLogs', { code: '@Model.Code' }, function (response) {
+                var html = '';
+                if (response.code === 200 && response.body && response.body.length > 0) {
+                    $.each(response.body, function (idx, item) {
+                        html += '<tr data-id="' + item.id + '">';
+                        html += '<td>' + item.userName + '</td>';
+                        html += '<td>' + item.deptName + '</td>';
+
+                        html += '<td>' + item.applyAt + '</td>';
+                        html += '<td>' + item.describe + '</td>';
+                        html += '<td>' + (item.serviceMan || '--') + '</td>';
+                        html += '<td>' + item.state + '</td>';
+
+                        html += '<td>' + item.reason + '</td>';
+                        html += '<td>' + item.solution + '</td>';
+                        
+                        html += '</tr>';
+                    });
+                } else {
+                    html = '<tr><td class="empty" colspan="8">无操作记录</td></tr>';
+                }
+                $('#maintainBody').html(html);
+            });
+
+            //$('.uploader-thumbs').viewer();
+        });
+    </script>
+} 

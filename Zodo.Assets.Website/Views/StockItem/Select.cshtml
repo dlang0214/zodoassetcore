@@ -1,0 +1,132 @@
+﻿@model Zodo.Assets.Core.Stock
+@{
+    ViewData["Title"] = "Select";
+}
+@section head {
+<style>
+    .form-box .label {
+        width: 60px;
+    }
+
+    .form-box .control {
+        margin-left: 70px;
+    }
+    </style>
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <h1 class="page-title">选择资产-@Model.Title</h1>
+        <hr />
+        <form id="form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="stockId" value="@Model.Id" />
+            <div class="toolbar row">
+                <div class="col-10">
+                    <a id="btn-refresh" href="/StockItem/Index/@Model.Id" class="btn btn-default"><i class="fa fa-angle-double-left"></i>返回</a>
+                    <select id="cate" name="CateId" asp-items="ViewBag.Cates">
+                        <option value="">不限种类</option>
+                    </select>
+                    <select id="deptId" name="DeptId" asp-items="ViewBag.Parents">
+                        <option value="">不限部门</option>
+                    </select>
+                    <select id="state" name="State" asp-items="ViewBag.States">
+                        <option value="">不限状态</option>
+                    </select>
+                    @*<select id="healty" name="Healthy" asp-items="ViewBag.Healthy">
+                            <option value="">不限健康度</option>
+                        </select>*@
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="grid.reload()" />
+                </div>
+                <div class="col-2 content-right">
+                    <input type="button" id="btn-add" class="btn btn-green" onclick="addToStockItem()" value="添加到盘点项" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGrid.v6.js"></script>
+    <script>
+        var stockId = @Model.Id;
+        var grid = $('#list').MyGrid({
+            api: '/StockItem/GetAssets',
+            columns: [
+                {
+                    title: '状态', do: function (item) {
+                        switch (item.state) {
+                            case '使用中':
+                                return '<span class="btn btn-mini btn-green">使用</span>';
+                            case '借出':
+                                return '<span class="btn btn-mini btn-orange">借出</span>';
+                            case '闲置':
+                                return '<span class="btn btn-mini btn-default">闲置</span>';
+                            case '报废':
+                                return '<span class="btn btn-mini btn-red">报废</span>';
+                            case '维修':
+                                return '<span class="btn btn-mini btn-success">维修</span>';
+                            case '租赁':
+                                return '<span class="btn btn-mini btn-info">租赁</span>';
+                            default:
+                                return "--";
+                        }
+                    }, width: 60
+                },
+                { title: '所属类别', field: 'assetCate', width: 120 },
+                { title: '资产编号', field: 'code', width: 90 },
+                { title: '资产名称', field: 'name', width: 180 },
+                { title: '所在部门', field: 'deptName', width: 90 },
+                { title: '当前使用人', field: 'accountName', width: 90 },
+                { title: '所在位置', field: 'position' }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 50,
+            dataConvertFn: null,
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function (item) {
+                console.log(grid.getSelectedValues().length)
+            },
+            multi: true,
+            pager: true,
+            auto: false
+        });
+
+        function addToStockItem() {
+            var ids = grid.getSelectedValues();
+            if (!ids || ids.length == 0) {
+                return layer.msg('请选择要添加的资产');
+            }
+
+            $('#btn-add').attr('disabled', 'disabled');
+            var param = { id: stockId, assetIds: ids };
+            $.extend(param, rvtToken);
+            $.ajax({
+                url: '/Stock/AddItems',
+                data: param,
+                method: 'POST',
+                success: function (response) {
+                    if (response.code === 200) {
+                        layer.msg("添加" + response.body + "条盘点明细");
+                        grid.reload();
+                    } else {
+                        layer.msg(response.message);
+                    }
+                },
+                complete: function () {
+                    $('#btn-add').removeAttr('disabled');
+                }
+            });
+        }
+    </script>
+}

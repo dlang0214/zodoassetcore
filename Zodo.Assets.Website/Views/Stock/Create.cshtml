@@ -1,0 +1,42 @@
+﻿@model Zodo.Assets.Core.Stock
+@{
+    ViewData["Title"] = "创建盘点";
+}
+
+<div class="form-box-fixed-container">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <h3 class="form-box-title">@ViewData["Title"]</h3>
+        <div class="form-box row">
+            <input type="hidden" asp-for="Id" />
+            <div class="col-12">
+                <div class="label">盘点标题</div>
+                <div class="control">
+                    <input type="text" asp-for="Title" isvalid="yes" checkexpession="NotNull" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="label">备注</div>
+                <div class="control">
+                    <textarea asp-for="Remark"></textarea>
+                </div>
+            </div>
+            <hr />
+        </div>
+        <div class="form-box-foot row">
+            <div class="col-7">
+                <div class="label text-red">&nbsp;</div>
+            </div>
+            <div class="col-5 content-right">
+                <input type="submit" class="btn btn-green" value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" />
+            </div>
+        </div>
+    </form>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        myUI.initForm();
+    </script>
+}

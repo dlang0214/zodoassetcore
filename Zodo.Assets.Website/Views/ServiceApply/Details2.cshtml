@@ -1,0 +1,139 @@
+﻿@model Zodo.Assets.Core.ServiceApply
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>申请详情</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/js/jquery-weui.min.js"></script>
+    <style>
+        p {
+            text-indent: 0;
+        }
+
+        .label {
+            text-indent: 0;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body ontouchstart class="page-bg">
+    <input type="hidden" asp-for="Id" />
+    @Html.AntiForgeryToken()
+    <div class="page__bd" style="padding-bottom: 66px;">
+        <div class="weui-cells__title">申请内容</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    申请部门
+                </div>
+                <div class="weui-cell__ft">@Model.DeptName</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">申请人</div>
+                <div class="weui-cell__ft">@Model.UserName</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">申请时间</div>
+                <div class="weui-cell__ft">@Model.ApplyAt.ToString("yyyy-MM-dd HH:mm")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>服务类型</p>
+                </div>
+                <div class="weui-cell__ft">@Model.Type</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd label">申请内容</div>
+                <div class="weui-cell__ft">@(Model.Describe ?? "--")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>期望完成日期</p>
+                </div>
+                <div class="weui-cell__ft">@(Model.RequireCompleteAt?.ToString("yyyy-MM-dd") ?? "--")</div>
+            </div>
+        </div>
+
+        @if (Model.Asset != null)
+        {
+            <div class="weui-cells__title">资产信息</div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产名称</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Name ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产品牌</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Band ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产型号</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Model ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产序号</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Imei ?? "--")</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.State == "待处理")
+    {
+        <div class="bottom-fixed-2">
+            <div class="weui-flex">
+                <div class="weui-flex__item">
+                    <div class="weui-btn-area">
+                        <input id="btn-receive" type="button" class="weui-btn weui-btn_primary" value="受理此申请">
+                    </div>
+                </div>
+                <div class="weui-flex__item">
+                    <div class="weui-btn-area">
+                        <a id="btn-actions" class="weui-btn weui-btn_default" href="/ServiceApply/Index">返回列表</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="weui-btn-area bottom-fixed">
+            <a class="weui-btn weui-btn_default" href="/ServiceApply/Index">返回列表</a>
+        </div>
+    }
+
+
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script>
+        $(function () {
+            FastClick.attach(document.body);
+
+            $('#btn-receive').on('click', function () {
+                $.confirm('确认接收此申请？', function () {
+                    var id = $('#Id').val();
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.post('/ServiceApply/Recieve', { id: id, __RequestVerificationToken: token }, function (response) {
+                        if (response.code === 200) {
+                            window.location.reload();
+                        } else {
+                            $.alert(response.message);
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

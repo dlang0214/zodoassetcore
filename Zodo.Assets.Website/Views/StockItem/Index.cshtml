@@ -1,0 +1,130 @@
+﻿@using System.Net;
+@model Zodo.Assets.Core.Stock
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <h1 class="page-title">@Model.Title</h1>
+        <hr />
+        <form id="form" onsubmit="return false" ;>
+            @Html.AntiForgeryToken()
+            <div class="toolbar row">
+                <div class="col-6">
+                    @if (!Model.IsDel && !Model.IsFinish)
+                    {
+                        <a id="btn-create"
+                           href="javascript:;"
+                           data-action="/StockItem/Select/@Model.Id"
+                           data-type="jump"
+                           data-options='{"title": "选择要盘点的资产", "width": 860, "height": 400, "before": null}'
+                           class="btn btn-green btn-customer"><i class="fa fa-plus-square"></i>添加盘点项</a>
+
+                        <a id="btn-create"
+                           href="javascript:;"
+                           data-action="/StockItem/Delete"
+                           data-type="ajax"
+                           data-grid="grid"
+                           data-options='{"msg": "确认操作？"}'
+                           class="btn btn-red btn-customer"><i class="fa fa-trash"></i>删除盘点项</a>
+                    }
+                    <a id="btn-detail"
+                       href="javascript:;"
+                       data-action="/StockItem/Details"
+                       data-type="pop"
+                       data-grid="grid"
+                       data-options='{"title": "盘点详情", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-success btn-customer"><i class="fa fa-leaf"></i>详情</a>
+                    <a href="/StockItem/Export/@Model.Id?title=@WebUtility.UrlEncode(Model.Title)" class="btn btn-green" target="_blank">导出Excel</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-6 content-right">
+                    <input type="hidden" name="StockId" value="@Model.Id" />
+                    <select name="DeptId" asp-items="ViewBag.Parents">
+                        <option value="">资产所在部门</option>
+                    </select>
+                    <select name="CheckResult">
+                        <option value="">盘点结果</option>
+                        <option value="0">未盘点</option>
+                        <option value="1">盘点成功</option>
+                        <option value="2">盘点异常</option>
+                    </select>
+                    <select name="orderby">
+                        <option value="">排序方式</option>
+                        <option value="1">资产编号</option>
+                        <option value="2">部门名称</option>
+                        <option value="3">使用人名称</option>
+                        <option value="4">创建时间</option>
+                    </select>
+                    <input name="Key" type="search" value="" placeholder="资产名称" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var grid = $('#list').MyGrid({
+            api: '/StockItem/Get',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                { title: '资产编号', field: 'assetCode', width: 110 },
+                { title: '资产名称', field: 'assetName', width: 180 },
+                { title: '使用部门', field: 'deptName', width: 180 },
+                { title: '使用人', field: 'accountName', width: 90 },
+                { title: '盘点人', field: 'checkor', width: 90, className: 'bg-whiteyellow' },
+                { title: '盘点时间', field: 'checkAt', width: 130, className: 'bg-whiteyellow' },
+                {
+                    title: '盘点方式', do: function (item) {
+                        switch (item.checkMethod) {
+                            case 1:
+                                return '扫码';
+                            case 2:
+                                return '手动盘点';
+                            default:
+                                return '--';
+                        }
+                    }, width: 90, className: 'bg-whiteyellow'
+                },
+                {
+                    title: '盘点结果', do: function (item) {
+                        switch (item.checkResult) {
+                            case 0:
+                                return '<span class="btn btn-mini btn-default">未盘点</span>';
+                            case 1:
+                                return '<span class="btn btn-mini btn-green">盘点成功</span>';
+                            case 2:
+                                return '<span class="btn btn-mini btn-orange">盘点异常</span>';
+                            default:
+                                return '<span class="btn btn-mini btn-red">未知结果</span>';
+                        }
+                    }, width: 90, className: 'bg-whiteyellow content-center'
+                },
+                { title: '备注', field: 'remark', className: 'bg-whiteyellow' }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-detail').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+    </script>
+}

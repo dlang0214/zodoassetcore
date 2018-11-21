@@ -1,0 +1,102 @@
+﻿@using System.Net;
+
+@{
+    ViewBag.Title = "服务申请记录";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <form id="form" onsubmit="return false" ;>
+            <div class="toolbar row">
+                <div class="col-6">
+                    <a href="/ServiceApplication/Export" class="btn btn-green" target="_blank">导出Excel</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-6 content-right">
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" onclick="window.grid.reload()" value="搜索">
+                    <a href="javascript:;" class="btn btn-default search-toggle-button"><i class="fa fa-filter"></i>高级筛选</a>
+                </div>
+            </div>
+            <div id="search-box" class="search-box">
+                <div class="caret-h"></div>
+                <div class="search-box-body form-box">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-3 form-box-cell">
+                            <div class="label">服务状态</div>
+                            <div class="control">
+                                <select name="State" asp-items="ViewBag.States">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">申请类型</div>
+                            <div class="control">
+                                <select name="Type" asp-items="ViewBag.Types">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div> 
+                        </div>
+                        <div class="col-6 form-box-cell">
+                            <div class="label">申请日期</div>
+                            <div class="control">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="date" name="ApplyAtStart" value="" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" name="ApplyAtEnd" value="" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        var grid = $('#list').MyGrid({
+            api: '/ServiceApplication/Get',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                { title: '申请部门', field: 'deptName', width: 120 },
+                { title: '申请人', field: 'accountName', width: 90 },
+                { title: '服务类型', field: 'type', width: 160 },
+                { title: '申请日期', field: 'applyAt', width: 120 },
+                { title: '要求完结日期', field: 'requireCompleteAt', width: 120 },
+                { title: '状态', field: 'state', width: 120 },
+                { title: '服务内容', field: 'describe' },
+                { title: '受理日期', field: 'receiveAt' },
+                { title: '完成日期', field: 'completeAt' },
+                { title: '确认日期', field: 'confirmAt' },
+                { title: '服务评价', field: 'score' }
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-edit').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+    </script>
+}
+

@@ -1,0 +1,102 @@
+﻿[
+  {
+    "Name": "系统管理",
+    "ImageUrl": "fa fa-gears",
+    "NavigateUrl": null,
+    "Children": [
+      {
+        "Name": "用户管理",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/AppUser",
+        "Children": []
+      },
+      {
+        "Name": "部门管理",
+        "ImageUrl": "fa fa-exclamation-triangle",
+        "NavigateUrl": "/Dept",
+        "Children": []
+      },
+      {
+        "Name": "员工管理",
+        "ImageUrl": "fa fa-mortar-board",
+        "NavigateUrl": "/Account",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "资产管理",
+    "ImageUrl": "fa fa-gears",
+    "NavigateUrl": null,
+    "Children": [
+      {
+        "Name": "资产分类",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/AssetCate",
+        "Children": []
+      },
+      {
+        "Name": "资产管理",
+        "ImageUrl": "fa fa-exclamation-triangle",
+        "NavigateUrl": "/Asset",
+        "Children": []
+      },
+      {
+        "Name": "资产借出",
+        "ImageUrl": "fa fa-exclamation-triangle",
+        "NavigateUrl": "/Loan",
+        "Children": []
+      },
+      {
+        "Name": "调配记录",
+        "ImageUrl": "fa fa-exclamation-triangle",
+        "NavigateUrl": "/AssetLog",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "资产报表",
+    "ImageUrl": "fa fa-gears",
+    "NavigateUrl": null,
+    "Children": [
+      {
+        "Name": "分类报表",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/Report/Cates",
+        "Children": []
+      },
+      {
+        "Name": "部门报表",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/Report/Depts",
+        "Children": []
+      },
+      {
+        "Name": "状态报表",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/Report/States",
+        "Children": []
+      },
+      {
+        "Name": "健康度报表",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/Report/Healthy",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "资产盘点",
+    "ImageUrl": "fa fa-gears",
+    "NavigateUrl": null,
+    "Children": [
+      {
+        "Name": "盘点管理",
+        "ImageUrl": "fa fa-asterisk",
+        "NavigateUrl": "/AssetCate",
+        "Children": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,135 @@
+﻿@model Zodo.Assets.Application.AssetDto
+
+@using Newtonsoft.Json;
+
+@{
+    ViewData["Title"] = "QrCode";
+    //var json = JsonConvert.SerializeObject(Model);
+    var json = string.Join("|", (new string[] { Model.Id.ToString(), Model.Code }));
+    var imgSrc = "/upload/qrcodes/" + Model.Id.ToString() + ".jpg";
+    }
+
+    @section head {
+    <style>
+        .print-box {
+            margin: 20px auto;
+            width: 300px;
+            height: 172px;
+            padding: 10px;
+            position: relative;
+            border: 1px #f3f3f3 solid;
+            box-shadow: 1px 1px 3px #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+            .print-box .img-box {
+                position: absolute;
+                width: 100px;
+                height: 100px;
+                left: 24px;
+                top: 66px;
+            }
+
+            .print-box .img-box img {
+                width: 90px;
+                height: 90px;
+            }
+
+            .print-box .content-box {
+                position: absolute;
+                left: 128px;
+                top: 60px;
+            }
+
+                .print-box .content-box li {
+                    line-height: 25px;
+                    font-size: 15px;
+                }
+
+            .print-box h3 {
+                font-size: 16px;
+                font-weight: bold;
+                line-height: 22px;
+                text-align: center;
+                letter-spacing: 0.1em;
+            }
+            
+            @@media print {
+                .no-print {
+                    display: none;
+                }
+
+                .print-box {
+                    margin: 0;
+                    border: none;
+                    box-shadow: none;
+                }
+            }
+    </style>
+}
+<!--startprint-->
+<div class="print-box" id="print-box">
+    <h3>无锡中德伯尔生物技术有限公司<br />固定资产管理</h3>
+    <div class="img-box">
+        <img src="@imgSrc" alt="@Model.Name" />
+    </div>
+    <ul class="content-box">
+        <li><span>编号：</span> @Model.Code</li>
+        <li><span>类型：</span> @Model.AssetCate</li>
+        <li><span>使用人：</span> @Model.AccountName</li>
+        <li><span>使用部门：</span> @Model.DeptName</li>
+    </ul>
+</div>
+<!--endprint-->
+<div class="no-print content-center">
+    <hr />
+    <a href="/Asset/SmallQrCode/@Model.Id" class="btn btn-default">小标签</a>
+    <input type="button" class="btn btn-red" onclick="window.close()" value="关闭" />
+    <input type="button" class="btn btn-blue" onclick="window.print()" value="打印标签" />
+</div>
+
+@section scripts {
+    <script src="~/lib/jquery/jquery.qrcode.min.js"></script>
+    <script src="~/lib/jQuery.print-master/dist/jQuery.print.min.js"></script>
+    <script>
+        var json = "@Html.Raw(json)";
+
+        jQuery('#qrCode').qrcode({
+        render: "canvas",
+        width: 120,
+        height: 120,
+            text: json
+    });
+
+    function doPrint() {
+        bdhtml = window.document.body.innerHTML;
+        sprnstr = "<!--startprint-->";
+        eprnstr = "<!--endprint-->";
+        prnhtml = bdhtml.substr(bdhtml.indexOf(sprnstr) + 17);
+        prnhtml = prnhtml.substring(0, prnhtml.indexOf(eprnstr));
+        window.document.body.innerHTML = prnhtml;
+        window.print();
+        }
+
+        function utf16to8(str) {
+            var out, i, len, c;
+            out = "";
+            len = str.length;
+            for (i = 0; i < len; i++) {
+                c = str.charCodeAt(i);
+                if ((c >= 0x0001) && (c <= 0x007F)) {
+                    out += str.charAt(i);
+                } else if (c > 0x07FF) {
+                    out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+                    out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                } else {
+                    out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F));
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                }
+            }
+            return out;
+        }
+    </script>
+}

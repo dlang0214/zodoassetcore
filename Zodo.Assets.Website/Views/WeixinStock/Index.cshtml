@@ -1,0 +1,44 @@
+﻿@model List<Zodo.Assets.Core.Stock>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>资产盘点</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+</head>
+
+<body ontouchstart class="page-bg">
+    <div class="page__bd">
+        <div class="weui-panel__hd">未 完 成 盘 点</div>
+        <div id="list" class="weui-panel__bd">
+            @foreach (var stock in Model)
+            {
+            <a href="/WeixinStock/Details/@stock.Id" class="weui-panel weui-panel_accessweui-media-box weui-media-box_text">
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title" style="color: #333;">@stock.Title</h4>
+                    <p class="weui-media-box__desc">@stock.Remark</p>
+                </div>
+            </a>
+            }
+        </div>
+    </div>
+
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script>
+        $(function () {
+            FastClick.attach(document.body);
+        });
+    </script>
+</body>
+
+</html>

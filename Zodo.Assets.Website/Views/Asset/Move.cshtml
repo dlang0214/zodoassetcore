@@ -1,0 +1,184 @@
+﻿@model Zodo.Assets.Core.AssetLog
+@{
+    ViewData["Title"] = "调配资产";
+    string accountsJson = string.Empty;
+    if (ViewBag.State == "作废" || ViewBag.State == "借出")
+    {
+        accountsJson = "[]";
+    }
+    else
+    {
+        accountsJson = Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Accounts);
+    }
+}
+<div class="container-980">
+    <form asp-action="Move">
+        <input type="hidden" asp-for="AssetId" />
+        <input type="hidden" asp-for="Id" />
+        <h3 class="form-box-title">【@Model.AssetCode】@Model.AssetName</h3>
+        <table class="table-search">
+            <tr>
+                <td class="label">当前状态</td>
+                <td class="control">
+                    <input type="text" value="@ViewBag.State" readonly />
+                </td>
+                <td class="label">健康度</td>
+                <td class="control">
+                    <input type="text" value="@ViewBag.Healthy" readonly />
+                </td>
+                <td colspan="2" rowspan="7">
+                    <div id="popLt" style="padding: 7px 0 20px 20px;">
+                        <object id="view1" type="application/x-eloamplugin" width="100%" height="270" name="view"></object>
+                        <div class="row">
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid btn-mini" onclick="Left()" value="左转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-default btn-fluid btn-mini" onclick="Right()" value="右转" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-green btn-fluid btn-mini" name="name" value="初始化" onclick="InitLt()" />
+                            </div>
+                            <div class="col-3" style="padding: 0 2px;">
+                                <input type="button" class="btn btn-blue btn-fluid btn-mini" value="扫描上传" id="scan" onclick="Scan(scanFinishedFn)" />
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">当前所在部门</td>
+                <td class="control">
+                    <input type="hidden" asp-for="FromDeptId" />
+                    <input type="text" asp-for="FromDeptName" readonly />
+                </td>
+                <td class="label">当前使用人</td>
+                <td class="control">
+                    <input type="hidden" asp-for="FromAccountId" />
+                    <input type="text" asp-for="FromAccountName" readonly />
+                </td>
+            </tr>
+            <tr>
+                <td class="label">当前位置</td>
+                <td class="control" colspan="3">
+                    <input type="text" value="@ViewBag.Position" readonly />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <hr />
+                </td>
+            </tr>
+            @if (ViewBag.State != "报废" && ViewBag.State != "借出")
+            {
+                <tr>
+                    <td class="label">目标部门</td>
+                    <td class="control">
+                        <input asp-for="TargetDeptName" type="hidden" class="form-control" />
+                        <select asp-for="TargetDeptId" asp-items="ViewBag.Depts">
+                            <option value="0">请选择</option>
+                        </select>
+                    </td>
+                    <td class="label">目标使用人</td>
+                    <td class="control">
+                        <input asp-for="TargetAccountName" type="hidden" class="form-control" />
+                        <select asp-for="TargetAccountId">
+                            <option value="0">请选择</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">调配日期</td>
+                    <td class="control">
+                        <input asp-for="OperateAt" type="date" class="form-control" />
+                    </td>
+                    <td class="label">调配后位置</td>
+                    <td class="control">
+                        <input type="text" name="position" value="@ViewBag.Position" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">调配原因</td>
+                    <td class="control" colspan="3">
+                        <textarea asp-for="Remark"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">图片</td>
+                    <td class="control" colspan="5">
+                        <div id="pic" data-count="5" data-url="/Upload/Image"></div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-xl text-red content-center">
+                        报废和借出资产禁止调配
+                    </td>
+                </tr>
+            }
+        </table>
+        @if (ViewBag.State == "报废" || ViewBag.State == "借出")
+        {
+            <hr />
+            <div class="form-box-foot content-center">
+                <input type="submit" class="btn btn-green" disabled value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" onclick="myUI.closeSelf('tab')" />
+            </div>
+        }
+        else
+        {
+            <hr />
+            <div class="form-box-foot content-center">
+                <input type="submit" class="btn btn-green" value="提交" />
+                <input type="button" id="btn-closeSelf" class="btn btn-red" onclick="myUI.closeSelf('tab')" value="关闭" />
+            </div>
+        }
+    </form>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script src="~/lib/myui/myImageUploader.js"></script>
+    <script src="~/lib/liangtian/ltScanner.js"></script>
+    <script>
+        myUI.initForm({
+            pageType: 'tab'
+        });
+
+        var pics =$("#pic").MultiImageUploader({
+            valueFormName: "Pics",
+            value: "@Model.Pics"
+        });
+
+        var accounts = @Html.Raw(accountsJson);
+        function calcAccountDropdowList() {
+            var deptId = $('#TargetDeptId').val();
+            var dom = $('#TargetAccountId');
+            dom.html('');
+            var html = '<option value="">请选择</option>';
+            accounts.forEach(function (item, idx) {
+                if (item.DeptId == deptId) {
+                    html += '<option value="' + item.Id + '">' + item.Name + '</option>';
+                }
+            });
+            dom.html(html);
+        }
+
+        $(function () {
+            $('#TargetDeptId').on('change', function () {
+                calcAccountDropdowList();
+            });
+
+            calcAccountDropdowList();
+        });
+
+        function scanFinishedFn(response) {
+            if (response.code == 200) {
+                pics.add(response.body);
+            } else {
+                alert(response.message);
+            }
+        }
+    </script>
+}

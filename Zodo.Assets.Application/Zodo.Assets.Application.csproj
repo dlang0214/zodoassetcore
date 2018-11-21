@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HZC.Database\HZC.Database.csproj" />
+    <ProjectReference Include="..\HZC.SearchUtil\HZC.SearchUtil.csproj" />
+    <ProjectReference Include="..\HZC.Utils.Core\HZC.Utils.Core.csproj" />
+    <ProjectReference Include="..\Zodo.Assets.Core\Zodo.Assets.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AssetCate\Search\" />
+    <Folder Include="ServiceApplication\Dto\" />
+    <Folder Include="Stock\Dtos\" />
+  </ItemGroup>
+
+</Project>

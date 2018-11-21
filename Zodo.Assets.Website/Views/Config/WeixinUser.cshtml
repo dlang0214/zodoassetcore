@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "员工管理";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <div class="toolbar row">
+            <div class="col-6">
+                <a href="javascript:;"
+                   data-action="/Config/ResetWeixinUserCache"
+                   data-type="ajax"
+                   data-options='{"msg": "确认操作？"}'  
+                   class="btn btn-green btn-customer"><i class="fa fa-trash"></i>更新缓存</a>
+                <a href="javascript:;" onclick="window.grid.reload()" class="btn btn-default"><i class="fa fa-refresh"></i>刷新列表</a>
+            </div>
+            <div class="col-6 content-right">
+                <form id="searchform" onsubmit="return false;">
+                    @Html.AntiForgeryToken()
+                    <input type="search" name="Key" placeholder="关键字" value="" />
+                    <button class="btn btn-blue" onclick="window.grid.reload()"><i class="fa fa-search"></i>搜索</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="grid-box" id="grid"></div>
+</div>
+
+@section scripts {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+        function getParent(url) {
+            var parent = grid.getSelectedValue();
+            if (parent) {
+                url += '?p=' + parent;
+            }
+            return url;
+        }
+
+        var grid = $('#grid').MyGrid({
+            api: '/Config/GetWeixinUsers',
+            type: 'get',
+            height: function () {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            columns: [
+                { title: '编号', field: 'userid', width: 160 },
+                { title: '员工姓名', field: 'name' },
+                { title: '手机', field: 'mobile' },
+                { title: 'Email', field: 'email', width: 240 },
+                { title: '职位', field: 'position' },
+                { title: '固话', field: 'telephone' }
+            ],
+            keyColumn: 'userid',
+            click: function (item) { },
+            dblClick: function (item) {},
+            handlers: {},
+            filterFn: function () {
+                return $('#searchform').serialize();
+            },
+            multi: false,
+            pager: false,
+            auto: true
+        });
+    </script>
+}

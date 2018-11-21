@@ -1,0 +1,92 @@
+﻿@model Zodo.Assets.Core.ServiceApplication
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="container-page">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.Id)
+        <div class="form-box-title">服务申请</div>
+        <div class="form-box">
+            <div class="row">
+                <div class="col-6">
+                    <div class="label"><span class="text-red">*</span> 申请部门</div>
+                    <div class="control">
+                        <input type="hidden" asp-for="DeptName" />
+                        <select asp-for="DeptId" asp-items="ViewBag.Parents" isvalid="yes" checkexpession="NotNull">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="label"><span class="text-red">*</span> 申请人</div>
+                    <div class="control">
+                        <input type="text" asp-for="AccountName" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 服务类型</div>
+                    <div class="control">
+                        <select asp-for="Type" isvalid="yes" checkexpession="NotNull">
+                            <option value="">请选择</option>
+                            <option value="报修">报修</option>
+                            <option value="打印机加墨">打印机加墨</option>
+                            <option value="开通邮箱账号">开通邮箱账号</option>
+                            <option value="工程建设">工程建设</option>
+                            <option value="技术咨询">技术咨询</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 申请于</div>
+                    <div class="control">
+                        <input type="date" asp-for="ApplyAt" />
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="label"><span class="text-red">*</span> 要求完成于</div>
+                    <div class="control">
+                        <input type="date" asp-for="RequireCompleteAt" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="label">服务内容</div>
+                    <div class="control">
+                        <textarea asp-for="Describe"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="form-box-foot content-center">
+            <input type="submit" value="提交" class="btn btn-green" />
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script src="~/lib/myui/myImageUploader.js"></script>
+    <script src="~/lib/liangtian/ltScanner.js"></script>
+    <script>
+        myUI.initForm({
+            successFn: function (response) {
+                if (response.code == 200) {
+                    layer.msg("申请成功，请耐心等待回复");
+                } else {
+                    layer.msg(response.message);
+                }
+            }
+        });
+
+        $(function () {
+            $('#DeptId').on('change', function () { 
+                var name = $(this).children(':selected').text();
+                name = name.replace(' ', '').replace('|-', '');
+                $('#DeptName').val(name);
+            })
+         })
+    </script>
+}

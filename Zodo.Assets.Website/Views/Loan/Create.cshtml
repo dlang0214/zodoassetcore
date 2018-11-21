@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "创建借出";
+}
+
+<div class="container-page">
+    <form action="/Asset/Loan" method="get">
+        <h3 class="content-center">请选择要借出的资产</h3>
+        <div class="form-box row">
+            <div class="col-12">
+                <div class="label">
+                    双击输入框
+                </div>
+                <div class="control">
+                    <div class="row">
+                        <div class="col-10">
+                            <input id="assetId" type="hidden" name="id" value="" />
+                            <input id="assetName" type="text" readonly class="pop-select-iframe" data-url="/Select/Assets" data-width="800" />
+                        </div>
+                        <div class="col-2">
+                            <input id="btn-submit" disabled="disabled" type="submit" class="btn btn-fluid btn-blue" value="确认" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </form>
+</div>
+@section scripts {
+    <script>
+        function assetselected(asset) {
+            if (asset) {
+                $('#assetId').val(asset.id);
+                $('#assetName').val('[' + asset.code + ']' + asset.name);
+                $('#btn-submit').removeAttr('disabled');
+            } else {
+                $('#assetId').val('');
+                $('#assetName').val('');
+                $('#btn-submit').attr('disabled', 'disabled');
+            }
+            layer.closeAll();
+        }
+    </script>
+}

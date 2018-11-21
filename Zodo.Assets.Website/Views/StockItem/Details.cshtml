@@ -1,0 +1,113 @@
+﻿@model Zodo.Assets.Core.StockItem
+
+@{
+    ViewData["Title"] = "盘点详情";
+}
+
+<div class="form-box-fixed-container">
+    <h3 class="form-box-title">@ViewData["Title"]</h3>
+    <div class="form-box row">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="col-4">
+            <div class="label">资产编号</div>
+            <div class="control">
+                <input type="text" asp-for="AssetCode" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="label">资产名称</div>
+            <div class="control">
+                <input asp-for="AssetName" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="label">使用部门</div>
+            <div class="control">
+                <input type="text" asp-for="DeptName" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="label">使用人</div>
+            <div class="control">
+                <input type="text" asp-for="AccountName" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="label">所在位置</div>
+            <div class="control">
+                <input asp-for="Position" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-12 blank-10"></div>
+        <hr />
+        <div class="col-12">
+            <div class="label">盘点结果</div>
+            <div class="control">
+                @if (!Model.IsFinish)
+                {
+                <select asp-for="CheckResult">
+                    <option value="1">已盘点</option>
+                    <option value="2">盘点异常</option>
+                </select>
+                }
+                else
+                {
+                    <input type="text" readonly="readonly" value="@Model.CheckResult" />
+                }
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="label">备注</div>
+            <div class="control">
+                @if (Model.IsFinish)
+                {
+                    <textarea asp-for="Remark" readonly></textarea>
+                }
+                else
+                {
+                    <textarea asp-for="Remark"></textarea>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="form-box-foot row">
+        <div class="col-7">
+            <div class="label text-red">&nbsp;</div>
+        </div>
+        <div class="col-5 content-right">
+            @if (!Model.IsFinish)
+            {
+            <input type="submit" class="btn btn-green" value="提交" onclick="stock()" />
+            }
+            <input type="button" id="btn-closeSelf" class="btn btn-red" onclick="parent.layer.closeAll()" value="关闭" />
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        var dom_result = $('#CheckResult');
+        var dom_remark = $('#Remark');
+        var dom_id = $('#Id');
+
+        var token = { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() };
+
+        function stock() {
+            var param = {
+                checkResult: dom_result.val(),
+                remark: dom_remark.val(),
+                id: dom_id.val()
+            };
+            $.extend(param, token);
+            $.post('/StockItem/Stock', param, function (response) {
+                if (response.code === 200) {
+                    parent.layer.closeAll();
+                    parent.grid.reload();
+                } else {
+                    layer.msg(response.msg);
+                }
+            });
+        }
+    </script>
+}

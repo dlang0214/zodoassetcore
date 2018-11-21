@@ -1,0 +1,240 @@
+﻿@{
+    Layout = null;
+    ViewBag.title = "中德生物资产管理";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>@ViewBag.title</title>
+    <link href="~/css/myui.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css">
+</head>
+<body>
+    <div class="north row">
+        <div class="col-4">
+            <h2 class="site-logo" id="logo">@ViewBag.title</h2>
+        </div>
+        <div class="col-8 content-right account-holder">
+            <span class="account">
+                <i class="fa fa-user-circle"></i>
+                @User.Identity.Name
+                <a id="btn-changePw" href="javascript:;" style="color: #ff9">修改密码</a>
+            </span>
+            <a href="javascript:;" onclick="logout" id="btn-logout" class="exit" title="安全退出">
+                <i class="fa fa-power-off"></i>
+            </a>
+        </div>
+    </div>
+    <div class="west">
+        <div class="west-scroll">
+            <ul id="nav"></ul>
+        </div>
+    </div>
+    <div class="crumbs">
+        <div class="crumbs-tabs">
+            <div class="crumbs-button crumbs-prev" onclick="tabs.scrollL()"><i class="fa fa-chevron-left"></i></div>
+            <div class="crumbs-button crumbs-next" onclick="tabs.scrollR()"><i class="fa fa-chevron-right"></i></div>
+            <div class="crumbs-button crumbs-more">
+                <a href="javascript:;" class="btn-dropdown">
+                    <i class="fa fa-chevron-down"></i>
+                </a>
+                <dl class="dropdown-children dd-more">
+                    <dd><a href="javascript:;" onclick="tabs.closeCurrent()">关闭当前标签</a></dd>
+                    <dd><a href="javascript:;" onclick="tabs.closeOthers()">关闭其他标签</a></dd>
+                    <dd><a href="javascript:;" onclick="tabs.closeAll()">关闭所有标签</a></dd>
+                </dl>
+            </div>
+            <div class="tabs" id="homeTab">
+                <ul class="home-tabs">
+                    <li class="nav-home active">
+                        <span><i class="fa fa-home"></i></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="east" id="east">
+        <div>
+            <iframe src="/Home/UserHome" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/layer/layer.js"></script>
+    <script src="~/lib/myui/myHomeTab.js"></script>
+    <script src="~/lib/myui/myui.v2.js"></script>
+    <script>
+        var tabs = $('#homeTab').HomeTab({
+            contentWrapper: $('#east'),
+            max: 10
+        });
+
+        var navs = [];
+        loadnav();
+
+        $("#btn-changePw").on("click", function () {
+            layer.open({
+                type: 2,
+                title: '修改密码',
+                shadeClose: false,
+                maxmin: true,
+                shade: [0.1, '#fff'],
+                area: ['480px', '320px'],
+                content: "/Home/ChangePw",
+                end: function () { }
+            });
+        });
+
+        function onPwChanged() {
+            layer.alert("密码修改成功，请重新登录", {
+                closeBtn: 0
+            }, function () {
+                window.location = "/Account/Logout";
+            });
+        }
+
+        $.get("/Menu/Tree?r=" + Math.random(), {}, function (data) {
+            navs = data;
+            loadnav();
+        });
+
+        // 导航
+        var tablist;
+
+        function loadnav() {
+            //动态加载导航菜单
+            var _html = "";
+            var index = 0;
+            $.each(navs, function (i, nav) {
+                if ((nav.children && nav.children.length > 0) || nav.url) {
+                    _html += '<li class="item">';
+                    _html += '    <a href="javascript:void(0);" class="main-nav">';
+                    _html += '        <div class="main-nav-icon"><i class="fa ' + nav.icon + '"></i></div>';
+                    _html += '        <div class="main-nav-text">' + nav.name + '</div>';
+                    _html += '        <span class="arrow"></span>';
+                    _html += '    </a>';
+                    _html += getsubnav(nav.children);
+                    _html += '</li>';
+                }
+            });
+            $("#nav").append(_html);
+            $('#nav li a').click(function () {
+                var href = $(this).data("href");
+                if (href) {
+                    tabs.open($(this).text)
+                }
+            })
+            $("#nav li.item").hover(function (e) {
+                var $sub = $(this).find('.sub-nav-wrap');
+                var length = $sub.find('.sub-nav').find('li').length;
+                if (length > 0) {
+                    $(this).addClass('on');
+                    $sub.show();
+                    var sub_top = $sub.offset().top + $sub.height();
+                    var body_height = $(window).height();
+                    if (sub_top > body_height) {
+                        $sub.css('bottom', '0px');
+                    }
+                }
+            }, function (e) {
+                $(this).removeClass('on');
+                $(this).find('.sub-nav-wrap').hide();
+            });
+            $("#nav li.sub").hover(function (e) {
+                var $ul = $(this).find('ul');
+                $ul.show();
+                var top = $(this).find('ul').offset().top;
+                var height = $ul.height();
+                var wheight = $(window).height();
+                if (top + height > wheight) {
+                    $ul.css('top', parseInt('-' + (height - 11))).css('left', '126px')
+                } else {
+                    $ul.css('top', '0px').css('left', '126px');
+                }
+            }, function (e) {
+                $(this).find('ul').hide();
+                $(this).find('ul').css('top', '0px');
+            });
+
+            //导航二菜单
+            function getsubnav(subData) {
+                var _html = '<div class="sub-nav-wrap">';
+                _html += '<ul class="sub-nav">';
+                $.each(subData, function (i, nav) {
+                    if (nav.children.length == 0) {
+                        _html += '<li><a href="javascript:;"';
+                        if (nav.url) {
+                            _html += ' onclick="tabs.open(\'' + nav.name + '\', \'' + nav.url + '\', \'' + (nav.icon ? nav.icon : '') + '\')"';
+                        }
+                        _html += '><i class="' + nav.icon + '"></i>' + nav.name + '</a> ';
+                        _html += getchildnav(nav.children);
+                        _html += '</li>';
+                    } else {
+                        _html += '<li class="sub"><a href="javascript:;"';
+                        if (nav.url) {
+                            _html += ' onclick="tabs.open(\'' + nav.name + '\', \'' + nav.url + '\', \'' + (nav.icon ? nav.icon : '') + '\')"';
+                        }
+                        _html += '><i class="' + nav.icon + '"></i>' + nav.name + '</a> ';
+                        _html += getchildnav(nav.children);
+                        _html += '</li>'; //sub
+                    }
+                });
+                _html += '</ul>';
+                _html += '</div>';
+                return _html;
+            }
+
+            //导航三菜单
+            function getchildnav(data) {
+                var _html = '<div class="sub-child"><ul>';
+                $.each(data, function (i, nav) {
+                    _html += '<li><a href="javascript:;"';
+                    if (nav.url) {
+                        _html += ' onclick="tabs.open(\'' + nav.name + '\', \'' + nav.url + '\', \'' + (nav.icon ? nav.icon : '') + '\')"';
+                    }
+                    _html += '><i class="fa ' + nav.icon + '"></i>' + nav.name + '</a></li>';
+                });
+                _html += '</ul></div>';
+                return _html;
+            }
+
+            //判断是否有子节点
+            function isbelowmenu(moduleId) {
+                var count = 0;
+                $.each(authorizeMenuData, function (i) {
+                    if (authorizeMenuData[i].ParentId == moduleId) {
+                        count++;
+                        return false;
+                    }
+                });
+                return count;
+            }
+        }
+
+        $("#btn-logout").on("click", function () {
+            layer.confirm("确定退出登录？", {
+                btn: ["确定", "取消"]
+            }, function () {
+                window.location.href = "/Home/LogOut";
+                //$.post("/Home/Logout", {}, function (data) {
+                //    if (data.Code == 200) {
+                //        window.location.href = "/Account/Login";
+                //    } else {
+                //        layer.msg(data.Message);
+                //    }
+                //});
+            });
+        });
+
+        function logout() {
+            if (confirm('确认退出？')) {
+                window.location.href = "/Home/LogOut";
+            }
+        }
+    </script>
+</body>
+</html>

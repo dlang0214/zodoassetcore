@@ -1,0 +1,264 @@
+﻿@model Zodo.Assets.Core.ServiceApply
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>申请详情</title>
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/lib/weui.min.css">
+    <link rel="stylesheet" href="~/lib/jquery-weui-build/dist/css/jquery-weui.min.css">
+    <link rel="stylesheet" href="~/css/customerwx.css">
+    <script src="~/lib/jquery-weui-build/dist/lib/jquery-2.1.4.js"></script>
+    <script src="~/lib/jquery-weui-build/dist/js/jquery-weui.min.js"></script>
+    <style>
+        p {
+            text-indent: 0;
+        }
+
+        .label {
+            text-indent: 0;
+            min-width: 100px;
+        }
+    </style>
+</head>
+
+<body ontouchstart class="page-bg">
+    <input type="hidden" asp-for="Id" />
+    @Html.AntiForgeryToken()
+    <div class="page__bd" style="padding-bottom: 16px;">
+        <div class="weui-cells__title">申请内容</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    申请部门
+                </div>
+                <div class="weui-cell__ft">@Model.DeptName</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    申请人
+                </div>
+                <div class="weui-cell__ft">@Model.UserName</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    申请时间
+                </div>
+                <div class="weui-cell__ft">@Model.ApplyAt.ToString("yyyy-MM-dd HH:mm")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    服务类型
+                </div>
+                <div class="weui-cell__ft">@Model.Type</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd label">
+                    申请内容
+                </div>
+                <div class="weui-cell__ft">
+                    @(Model.Describe ?? "--")
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    期望完成日期
+                </div>
+                <div class="weui-cell__ft">@(Model.RequireCompleteAt?.ToString("yyyy-MM-dd") ?? "--")</div>
+            </div>
+        </div>
+
+        @if (Model.Asset != null)
+        {
+            <div class="weui-cells__title">资产信息</div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产名称</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Name ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产品牌</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Band ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产型号</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Model ?? "--")</div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">资产序号</div>
+                    <div class="weui-cell__ft">@(Model.Asset.Imei ?? "--")</div>
+                </div>
+            </div>
+        }
+
+        <div class="weui-cells__title">处理状态</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">受理人</div>
+                <div class="weui-cell__ft">@(Model.ServiceManName ?? "--")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">受理时间</div>
+                <div class="weui-cell__ft">@(Model.ReceiveAt?.ToString("yyyy-MM-dd HH:mm") ?? "--")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">服务状态</div>
+                <div class="weui-cell__ft">
+                    <b>@(Model.State ?? "--")</b>
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">完成时间</div>
+                <div class="weui-cell__ft">@(Model.CompleteAt?.ToString("yyyy-MM-dd HH:mm") ?? "--")</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">评价</div>
+                <div class="weui-cell__ft">
+                    @Model.Score
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">用户反馈</div>
+                <div class="weui-cell__ft">
+                    @Model.Reply
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells__title">原因及故障分析</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd open-popup" data-target="#reason">
+                    <p id="btn-reason">
+                        @(string.IsNullOrWhiteSpace(Model.Reason) ? "无内容" : Model.Reason)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-cells__title">解决方案</div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd open-popup" data-target="#solution">
+                    <p id="btn-solution">
+                        @(string.IsNullOrWhiteSpace(Model.Solution) ? "无内容" : Model.Solution)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.State == "已接受")
+        {
+            <div id="reason" class="weui-popup__container">
+                <div class="weui-popup__overlay"></div>
+                <div class="weui-popup__modal">
+                    <div class="weui-cells__title">故障原因及分析</div>
+                    <div class="weui-cells">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea asp-for="Reason" class="weui-textarea" rows="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-btn-area">
+                        <input id="btn-submitReason" type="button" class="weui-btn weui-btn_primary" value="确定">
+                        <input type="button" class="weui-btn weui-btn_default close-popup" value="关闭">
+                    </div>
+                </div>
+            </div>
+
+            <div id="solution" class="weui-popup__container">
+                <div class="weui-popup__overlay"></div>
+                <div class="weui-popup__modal">
+                    <div class="weui-cells__title">解决方案</div>
+                    <div class="weui-cells">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea asp-for="Solution" class="weui-textarea" rows="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-btn-area">
+                        <input id="btn-submitSolution" type="button" class="weui-btn weui-btn_primary" value="确定">
+                        <input type="button" class="weui-btn weui-btn_default close-popup" value="关闭">
+                    </div>
+                </div>
+            </div>
+
+            <div class="weui-btn-area">
+                <input id="btn-complete" type="button" class="weui-btn weui-btn_primary" value="完成服务" />
+                <a class="weui-btn weui-btn_default" href="/ServiceApply/Index">返回列表</a>
+            </div>
+
+            <script>
+                $(function () {
+                    $('#btn-submitReason').on('click', function () {
+                        $.confirm('确认保存故障分析？', function () {
+                            var reason = $('#Reason').val();
+                            var id = $('#Id').val();
+                            var token = $('input[name="__RequestVerificationToken"]').val();
+
+                            $.post('/ServiceApply/Reason', { id: id, reason: reason, __RequestVerificationToken: token }, function (response) {
+                                if (response.code === 200) {
+                                    window.location.reload();
+                                } else {
+                                    alert(response.message);
+                                }
+                            });
+                        });
+                    });
+
+                    $('#btn-submitSolution').on('click', function () {
+                        $.confirm('确认保存解决方案？', function () {
+                            var solution = $('#Solution').val();
+                            var id = $('#Id').val();
+                            var token = $('input[name="__RequestVerificationToken"]').val();
+
+                            $.post('/ServiceApply/Solution', { id: id, solution: solution, __RequestVerificationToken: token }, function (response) {
+                                if (response.code === 200) {
+                                    window.location.reload();
+                                } else {
+                                    $.alert(response.message);
+                                }
+                            });
+                        });
+                    });
+
+                    $('#btn-complete').on('click', function () {
+                        $.confirm('确认完成此服务？', function () {
+                            var id = $('#Id').val();
+                            var token = $('input[name="__RequestVerificationToken"]').val();
+
+                            $.post('/ServiceApply/Complete', { id: id, __RequestVerificationToken: token }, function (response) {
+                                if (response.code === 200) {
+                                    window.location.reload();
+                                } else {
+                                    $.alert(response.message);
+                                }
+                            });
+                        });
+                    });
+                });
+            </script>
+        }
+        else
+        {
+            <div class="weui-btn-area">
+                <a class="weui-btn weui-btn_default" href="/ServiceApply/Index" id="showTooltips">返回列表</a>
+            </div>
+        }
+    </div>
+
+    <script src="~/lib/jquery-weui-build/dist/lib/fastclick.js"></script>
+    <script>
+        $(function () {
+            FastClick.attach(document.body);
+        });
+    </script>
+</body>
+
+</html>

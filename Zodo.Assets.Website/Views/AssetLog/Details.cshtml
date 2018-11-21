@@ -1,0 +1,42 @@
+﻿@model Zodo.Assets.Core.AssetLog
+@{
+    ViewData["Title"] = "资产详情";
+    var picUrl = $"/upload/qrcodes/{Model.Id}.jpg";
+}
+<div class="container-page">
+    <h3 class="form-box-title">资产<text>@Model.Type</text>详情 - @Model.AssetName</h3>
+    <div class="container-page-body">
+        <table class="table table-bordered table-info">
+            <tr>
+                <td class="label">操作日期</td>
+                <td class="control">@Model.OperateAt.ToString("yyyy年MM月dd日")</td>
+                <td class="label">操作人</td>
+                <td class="control">@Model.Creator</td>
+            </tr>
+            <tr>
+                <td class="label">资产编号</td>
+                <td>@Model.AssetCode</td>
+                <td class="label">资产名称</td>
+                <td>@Model.AssetName</td>
+            </tr>
+            <tr>
+                <td class="label">原使用部门</td>
+                <td>@Model.FromDeptName</td>
+                <td class="label">原使用人</td>
+                <td>@Model.FromAccountName</td>
+            </tr>
+            <tr>
+                <td class="label">目标部门</td>
+                <td>@Model.TargetDeptName</td>
+                <td class="label">目标使用人</td>
+                <td>@Model.TargetAccountName</td>
+            </tr>
+            <tr>
+                <td class="label">图片</td>
+                <td colspan="3">
+                    <Pics Val="@Model.Pics"></Pics>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

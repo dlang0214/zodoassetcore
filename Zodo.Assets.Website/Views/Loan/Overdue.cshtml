@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.Title = "逾期未归还资产";
+}
+
+<div class="container-fixed">
+    <div id="pageTitle">
+        <form id="form" onsubmit="return false" ;>
+            <div class="toolbar row">
+                <div class="col-6">
+                    <a id="btn-details"
+                       href="javascript:;"
+                       data-action="/Loan/Details"
+                       data-type="blank"
+                       data-grid="grid"
+                       data-options='{"title": "借出详情", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-blue btn-customer"><i class="fa fa-pencil-square"></i>详情</a>
+                    <a id="btn-edit"
+                       href="javascript:;"
+                       data-action="/Loan/Return"
+                       data-type="tab"
+                       data-grid="grid"
+                       data-options='{"title": "归还", "width": 720, "height": 400, "before": null}'
+                       class="btn btn-orange btn-customer"><i class="fa fa-pencil-square"></i>归还</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                </div>
+                <div class="col-6 content-right">
+                    <input name="Key" type="search" value="" placeholder="关键字" />
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload();">
+                    <a href="javascript:;" class="btn btn-default search-toggle-button"><i class="fa fa-filter"></i>高级筛选</a>
+                </div>
+            </div>
+            <div id="search-box" class="search-box">
+                <div class="caret-h"></div>
+                <div class="search-box-body form-box">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-3 form-box-cell">
+                            <div class="label">资产编号</div>
+                            <div class="control"><input type="text" name="AssetCode" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">来源部门</div>
+                            <div class="control"><input type="text" name="FromDeptId" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">目标部门</div>
+                            <div class="control"><input type="text" name="TargetDeptId" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">目标员工</div>
+                            <div class="control"><input type="text" name="TargetAccountId" readonly onclick="selectAccount(this)" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">借出日期</div>
+                            <div class="control"><input type="text" name="LoanAt" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">预计归还日期</div>
+                            <div class="control"><input type="text" name="ExpectedReturnAt" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">是否归还</div>
+                            <div class="control"><input type="text" name="IsReturn" /></div>
+                        </div>
+                        <div class="col-3 form-box-cell">
+                            <div class="label">归还日期</div>
+                            <div class="control"><input type="text" name="ReturnAt" /></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="grid-box"></div>
+</div>
+
+@section scripts
+    {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script>
+
+        var grid = $('#list').MyGrid({
+            api: '/Loan/GetOverdue',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                {
+                    title: '已归还', do: function (item) {
+                        if (item.isReturn) {
+                            return '<span class="btn btn-green btn-mini">是</span>';
+                        } else {
+                            return '<span class="btn btn-red btn-mini">否</span>';
+                        }
+                    }, width: 60
+                },
+                { title: '资产名称', field: 'assetName', className: 'text-bold', width: 240 },
+                { title: '原部门', field: 'fromDeptName', width: 120 },
+                { title: '原使用人', field: 'fromAccountName', width: 90 },
+                { title: '新部门', field: 'targetDeptName', width: 120 },
+                { title: '新使用人', field: 'targetAccountName', width: 90 },
+                { title: '借出日期', field: 'loanAt', width: 120 },
+                { title: '预计归还日期', field: 'expectedReturnAt', width: 120 },
+                { title: '归还日期', field: 'returnAt', width: 120 },
+            ],
+            keyColumn: 'id',
+            height: function() {
+                var h = $(window).height() - $('#pageTitle').height() - 40;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function(source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function() { return $('#form').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: function(item) { },
+            dblClick: function(item) { $('#btn-details').trigger('click'); },
+            multi: false,
+            pager: true,
+            auto: true
+        });
+
+        function selectAccount(obj) {
+            layer.open({
+                type: 2,
+                title: '选择用户',
+                area: ['800px', '400px'],
+                content: '/Select/DeptAndAccount'
+            })
+        }
+
+        function deptAndAccountSelected(item) {
+
+        }
+    </script>
+}
+

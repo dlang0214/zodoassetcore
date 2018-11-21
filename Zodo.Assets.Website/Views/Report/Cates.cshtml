@@ -1,0 +1,107 @@
+﻿@model List<Zodo.Assets.Application.AssetGroupDto>
+@{
+    ViewData["Title"] = "资产分类报表";
+}
+
+@section head {
+    <style>
+        .table-info-mini td.report-title {
+            font-size: 16px;
+            line-height: 30px;
+            border: none;
+        }
+
+        .table-info-mini td.qr-box {
+            width: 170px;
+            border-bottom: 2px #439198 solid;
+            padding: -10px;
+        }
+
+            .table-info-mini td.qr-box img {
+                width: 160px;
+                height: 160px;
+            }
+
+        .table-info-mini tr.last td {
+            border-bottom: 2px #439198 solid;
+        }
+
+        .table-info-mini td.empty {
+            text-align: center;
+            line-height: 40px;
+        }
+
+        .toolbar {
+            position: fixed;
+            background-color: #f3f3f3;
+            width: 980px;
+            padding-top: 10px;
+            top: 0;
+            left: 50%;
+            height: 50px;
+            margin-left: -490px;
+        }
+    </style>
+}
+
+<div class="toolbar row no-print">
+    <div class="col-6">
+        <a href="/Report/ExportCates" class="btn btn-green" target="_blank">导出资产清单</a>
+        <a href="javascript:;" onclick="window.print()" class="btn btn-blue">打印</a>
+    </div>
+    <div class="col-6 content-right"></div>
+</div>
+<div class="container-980" style="margin-top: 50px; width: 980px;">
+    <table class="table table-bordered table-info table-info-mini" id="report">
+        @foreach (var g in Model)
+        {
+            <tr>
+                <td colspan="5" class="report-title">@g.GroupName</td>
+            </tr>
+            @if (g.Assets.Count > 0)
+            {
+                @foreach (var a in g.Assets)
+                {
+                    //var json = "{\"id\":\"" + a.Id.ToString() + "\", \"code\":\"" + a.Code + "\"}";
+                    string imgSrc = "/upload/qrcodes/" + a.Id.ToString() + ".jpg";
+
+                    <tr>
+                        <td class="label">编号</td>
+                        <td>@a.Code</td>
+                        <td class="label">名称</td>
+                        <td>@a.Name</td>
+                        <td rowspan="5" class="qr-box content-center">
+                            <img src="@imgSrc" alt="二维码" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">所在位置</td>
+                        <td colspan="3">@a.Position</td>
+                    </tr>
+                    <tr>
+                        <td class="label">使用单位</td>
+                        <td>@a.DeptName</td>
+                        <td class="label">使用人</td>
+                        <td>@a.AccountName</td>
+                    </tr>
+                    <tr>
+                        <td class="label">品牌</td>
+                        <td>@a.Band</td>
+                        <td class="label">型号</td>
+                        <td>@a.Model</td>
+                    </tr>
+                    <tr class="last">
+                        <td class="label">序列号</td>
+                        <td colspan="3">@a.Imei</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="empty">暂无</td>
+                </tr>
+            }
+        }
+    </table>
+</div>

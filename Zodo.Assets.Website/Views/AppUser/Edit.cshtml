@@ -1,0 +1,31 @@
+﻿@model Zodo.Assets.Core.User
+
+@{
+    ViewData["Title"] = Model.Id > 0 ? "编辑用户信息" : "创建用户信息";
+}
+
+<div class="form-box-fixed-container">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <h3 class="form-box-title">@ViewData["Title"]</h3>
+        <div class="form-box row">
+            <input type="hidden" asp-for="Id" />
+            <div class="col-12">
+                <div class="label">用户名称</div>
+                <div class="control">
+                    <input asp-for="Name" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="form-box-foot content-right">
+            <input type="submit" class="btn btn-green" value="提交" />
+            <input type="button" id="btn-closeSelf" class="btn btn-red" value="关闭" />
+        </div>
+    </form>
+</div>
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+            myUI.initForm();
+    </script>
+}

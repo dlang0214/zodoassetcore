@@ -1,0 +1,145 @@
+﻿
+@{
+    ViewData["Title"] = "Assets";
+}
+
+@section head {
+    <style>
+        .user-label li {
+            display: block;
+            text-align: center;
+            padding: 10px 6px;
+            margin: 2px;
+            border: 1px #eee dashed;
+            background-color: #fffdf5;
+            cursor: pointer;
+            width: 32%;
+        }
+
+            .user-label li.active {
+                border: 1px #f7c1a5 dashed;
+                background-color: #faf0ec;
+                color: #8b540f;
+            }
+    </style>
+}
+<div class="container-col-group no-margin">
+    <div class="col-3 col-group-item">
+        @*<div class="col-header">资产分类</div>*@
+        <div class="col-body">
+            <div class="tree" id="tree"></div>
+        </div>
+    </div>
+
+    <div class="col-9 col-group-item">
+        @*<div class="col-header">资产</div>*@
+        <div class="col-body">
+            <div class="toolbar row" style="padding-bottom: 5px;">
+                <div class="col-4">
+                    <input type="button" class="btn btn-red" value="清空选择" onclick="clear()" />
+                </div>
+                <div class="col-8 content-right">
+                    <form id="form1" onsubmit="return false;">
+                        <input type="hidden" name="deptId" id="dept" />
+                        <input type="search" name="Key" value="" placeholder="资产名称或编号" />
+                        <input type="button" class="btn btn-blue" value="查找" onclick="loadAssets()" />
+                        <input type="button" class="btn btn-green" value="选中" onclick="ok()" />
+                    </form>
+                </div>
+            </div>
+
+            <div id="list" class="grid-box"></div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/lib/myui/myGridNoFixed.v2.js"></script>
+    <script src="~/lib/myui/myTree.V2.js"></script>
+    <script>
+        var tree = $('#tree').TreeView({
+            api: '/Select/deptTree',
+            text: 'name',
+            value: 'id',
+            convertSource: function (data) {
+                data[0].children.push({ id: 0, name: '设备管理部', level: 2 });
+                return data;
+            },
+            onClick: function (item) {
+                deptSelected(item);
+            }
+        });
+
+        function deptSelected(dept) {
+            $('#dept').val(dept.id);
+            grid.reload();
+        }
+
+        $(function () {
+            tree.render();
+        });
+
+        function ok() {
+            var item = grid.getSelectedItem();
+            parent.assetselected(item);
+        }
+
+        var grid = $('#list').MyGrid({
+            api: '/Select/GetAssets',
+            columns: [
+                { title: '编号', type: 'indexNum', width: 40 },
+                {
+                    title: '资产', do: function (item) {
+                        var names = [];
+                        if (item.code) {
+                            names.push('[' + item.code + ']');
+                        }
+                        if (item.band) {
+                            names.push(item.band);
+                        }
+                        if (item.model) {
+                            names.push(item.model);
+                        }
+                        if (item.imei) {
+                            names.push(item.imei);
+                        }
+                        names.push(item.name);
+                        return names.join('-');
+                    }, width: 300
+                },
+                {
+                    title: '所在位置', do: function (item) {
+                        var posi = [];
+                        if (item.deptName) {
+                            posi.push(item.deptName);
+                        }
+                        if (item.accountName) {
+                            posi.push(item.accountName);
+                        }
+                        if (item.position) {
+                            posi.push(item.position);
+                        }
+
+                        return posi.join('|');
+                    }
+                }
+            ],
+            keyColumn: 'id',
+            height: function () {
+                var h = $(window).height() - 65;
+                return h;
+            },
+            pageSize: 20,
+            dataConvertFn: function (source) { return source; },
+            renderCompleteFn: null,
+            filterFn: function () { return $('#form1').serialize(); },
+            ajaxErrorFn: null,
+            ajaxBeforeSendFn: null,
+            click: null,
+            dblClick: function (item) { ok(); },
+            multi: false,
+            pager: false,
+            auto: true
+        });
+    </script>
+}

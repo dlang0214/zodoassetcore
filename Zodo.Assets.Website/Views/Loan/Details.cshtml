@@ -1,0 +1,91 @@
+﻿ @model Zodo.Assets.Core.Loan
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="container-page">
+    <h3 class="form-box-title text-bold">借出详情 - @Model.AssetName</h3>
+    <table class="table table-bordered table-info">
+        <tr>
+            <td class="label">借出日期</td>
+            <td class="control">
+                @Model.LoanAt.ToString("yyyy年MM月dd日")
+            </td>
+            <td class="label">预计归还日期</td>
+            <td class="control">
+                @Model.ExpectedReturnAt.ToString("yyyy年MM月dd日")
+            </td>
+        </tr>
+        @if (Model.IsReturn)
+        {
+            <tr>
+                <td class="label">是否归还</td>
+                <td class="control"><span class="btn btn-green btn-mini">已归还</span></td>
+                <td class="label">归还日期</td>
+                @{
+                    var returnAt = Model.ReturnAt == null ? "--" : ((DateTime)Model.ReturnAt).ToString("yyyy年MM月dd日");
+                }
+                <td class="control">@returnAt</td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td class="label">是否归还</td>
+                @{
+                    string returnState = "";
+                    if (Model.ExpectedReturnAt > DateTime.Today)
+                    {
+                        returnState = "<span class='btn btn-blue'>未到期</span>";
+                    }
+                    else
+                    {
+                        returnState = "<span class='btn btn-red'>已逾期</span>";
+                    }
+                }
+                <td class="control"><span class="btn btn-red">@Html.Raw(returnState)</span></td>
+                <td class="label">归还日期</td>
+                <td></td>
+            </tr>
+        }
+
+        <tr>
+            <td class="label">资产编号</td>
+            <td>@Model.AssetCode</td>
+            <td class="label">资产名称</td>
+            <td>@Model.AssetName</td>
+        </tr>
+        <tr>
+            <td class="label">原使用部门</td>
+            <td>@Model.FromDeptName</td>
+            <td class="label">原使用人</td>
+            <td>@Model.FromAccountName</td>
+        </tr>
+        <tr>
+            <td class="label">目标部门</td>
+            <td>@Model.TargetDeptName</td>
+            <td class="label">目标使用人</td>
+            <td>@Model.TargetAccountName</td>
+        </tr>
+
+        <tr>
+            <td class="label">图片</td>
+            <td colspan="3">
+                <Pics Val="@Model.Pics"></Pics>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">备注</td>
+            <td colspan="3">
+                <Pics Val="@Model.Remark"></Pics>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">操作日期</td>
+            <td>@Model.CreateAt.ToString("yyyy年MM月dd日")</td>
+            <td class="label">操作人</td>
+            <td>@Model.Creator</td>
+        </tr>
+    </table>
+</div>
+
