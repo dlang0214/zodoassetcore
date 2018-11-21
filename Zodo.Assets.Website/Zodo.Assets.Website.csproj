@@ -31,8 +31,6 @@
     <None Include="Views\Report\Accounts.cshtml" />
     <None Include="Views\Report\Cates.cshtml" />
     <None Include="Views\Report\Depts.cshtml" />
-    <None Include="wwwroot\lib\art-template\.github\ISSUE_TEMPLATE.md" />
-    <None Include="wwwroot\lib\jquery-weui-build\.github\ISSUE_TEMPLATE.md" />
     <None Include="wwwroot\lib\viewer\.github\CODE_OF_CONDUCT.md" />
     <None Include="wwwroot\lib\viewer\.github\CONTRIBUTING.md" />
     <None Include="wwwroot\lib\viewer\.github\ISSUE_TEMPLATE.md" />

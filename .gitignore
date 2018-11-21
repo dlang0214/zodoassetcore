@@ -263,3 +263,5 @@ __pycache__/
 /Backup*
 /_bak*
 /wwwroot/upload
+/wwwroot/*.txt
+/[Ll]og
