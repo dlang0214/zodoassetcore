@@ -160,7 +160,7 @@ namespace Zodo.Assets.Website.Controllers
 
                 return $"/report/{WebUtility.UrlEncode(fileName)}";
             }
-            #endregion
         }
+        #endregion
     }
 }
