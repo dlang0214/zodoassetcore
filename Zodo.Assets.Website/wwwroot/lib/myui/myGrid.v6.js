@@ -58,10 +58,10 @@
             right: $('<div class="grid-fixed-right"></div>'),
             leftHeader: $('<div class="fixed-left-header"></div>'),
             rightHeader: $('<div class="fixed-right-header"></div>'),
-            leftbody: $('<div class="fixed-left-body scroll-y"></div>'),
-            rightbody: $('<div class="fixed-right-body scroll-y"></div>'),
-            leftbodyTable: $('<table class="table table-striped left-fixed-body-table"></table>'),
-            rightbodyTable: $('<table class="table table-striped right-fixed-body-table"></table>'),
+            leftBody: $('<div class="fixed-left-body scroll-y"></div>'),
+            rightBody: $('<div class="fixed-right-body scroll-y"></div>'),
+            leftBodyTable: $('<table class="table table-striped left-fixed-body-table"></table>'),
+            rightBodyTable: $('<table class="table table-striped right-fixed-body-table"></table>'),
             leftHeaderTable: $('<table class="table table-striped left-fixed-header-table"></table>'),
             rightHeaderTable: $('<table class="table table-striped right-fixed-header-table"></table>'),
             lastCols: null,
@@ -205,15 +205,15 @@
             if (hasLeft) {
                 doms.leftHeaderTable.append($(leftColGroup));
                 doms.leftHeaderTable.append($(leftTHead));
-                doms.leftbodyTable.append($(leftColGroup));
+                doms.leftBodyTable.append($(leftColGroup));
                 doms.leftTbody = $('<tbody class="left-tbody"></tbody>');
-                doms.leftbodyTable.append(doms.leftTbody);
+                doms.leftBodyTable.append(doms.leftTbody);
 
                 doms.leftHeader.append(doms.leftHeaderTable);
-                doms.leftbody.append(doms.leftbodyTable);
+                doms.leftBody.append(doms.leftBodyTable);
 
                 doms.left.append(doms.leftHeader);
-                doms.left.append(doms.leftbody);
+                doms.left.append(doms.leftBody);
 
                 _this.append(doms.left);
             }
@@ -221,15 +221,15 @@
             if (hasRight) {
                 doms.rightHeaderTable.append($(rightColGroup));
                 doms.rightHeaderTable.append($(rightTHead));
-                doms.rightbodyTable.append($(rightColGroup));
+                doms.rightBodyTable.append($(rightColGroup));
                 doms.rightTbody = $('<tbody class="right-tbody"></tbody>');
-                doms.rightbodyTable.append(doms.rightTbody);
+                doms.rightBodyTable.append(doms.rightTbody);
 
                 doms.rightHeader.append(doms.rightHeaderTable);
-                doms.rightbody.append(doms.rightbodyTable);
+                doms.rightBody.append(doms.rightBodyTable);
 
                 doms.right.append(doms.rightHeader);
-                doms.right.append(doms.rightbody);
+                doms.right.append(doms.rightBody);
 
                 _this.append(doms.right);
             }
@@ -328,16 +328,16 @@
             doms.body.css('height', heights.body + 'px');
             if (leftCols.length > 0) {
                 if (!hasHScrollBar) {
-                    doms.leftbody.css('height', heights.body + 'px');
+                    doms.leftBody.css('height', heights.body + 'px');
                 } else {
-                    doms.leftbody.css('height', heights.body - 17 + 'px');
+                    doms.leftBody.css('height', heights.body - 17 + 'px');
                 }
             }
             if (rightCols.length > 0) {
                 if (!hasHScrollBar) {
-                    doms.rightbody.css('height', heights.body + 'px');
+                    doms.rightBody.css('height', heights.body + 'px');
                 } else {
-                    doms.rightbody.css('height', heights.body - 17 + 'px');
+                    doms.rightBody.css('height', heights.body - 17 + 'px');
                 }
             }
         }
@@ -352,7 +352,7 @@
         }
 
         //    4.2 获取数据表格的tbody
-        function getbodyTbody() {
+        function getBodyTbody() {
             if (!doms.bodyTbody) {
                 doms.bodyTbody = _this.find('.grid-body tbody');
             }
@@ -399,7 +399,7 @@
                 if (col.fixed == 'left' || col.fixed == 'right') {
                     h += '<td><div class="cell"></div></td>';
                 } else {
-                    h += renderColumn(col, rowData, index, rowData['Level']);
+                    h += renderColumn(col, rowData[col.field], index, rowData['Level'], rowData);
                 }
             });
             h += '</tr>';
@@ -410,7 +410,7 @@
         function renderLeftRow(rowData, index) {
             var h = '<tr class="tr-' + index + '" data-idx="' + index + '"' + (isTree ? ' data-level="' + rowData[levelColumn] + '"' : '') + '>';
             $.each(leftCols, function (idx, col) {
-                h += renderColumn(col, rowData, index, rowData['Level']);
+                h += renderColumn(col, rowData[col.field], index, rowData['Level'], rowData);
             });
             h += '</tr>';
             return h;
@@ -420,24 +420,29 @@
         function renderRightRow(rowData, index) {
             var h = '<tr class="tr-' + index + '" data-idx="' + index + '"' + (isTree ? ' data-level="' + rowData[levelColumn] + '"' : '') + '>';
             $.each(rightCols, function (idx, col) {
-                h += renderColumn(col, rowData, index, rowData['Level']);
+                h += renderColumn(col, rowData[col.field], index, rowData['Level'], rowData);
             });
             h += '</tr>';
             return h;
         };
 
         //    5.4 渲染单元格
-        function renderColumn(col, rowData, index, level) {
-            var val = rowData[col.field] || '';
-            var cssName = 'cell';
-
-            if (col.className) {
-                cssName += ' ' + col.className;
+        function renderColumn(col, colData, index, level, rowData) {
+            var val = '';
+            if ($.isNumeric(colData)) {
+                val = colData;
+            } else {
+                val = colData || '';
             }
+            var cssName = 'cell';
+            var tdClass = col.className ? ' class="' + col.className + '"' : '';
+            //if (col.className) {
+            //    cssName += ' ' + col.className;
+            //}
 
             if (col.do != undefined) {
                 var v = col.do(rowData);
-                return '<td><div class="' + cssName + '">' + v + '</div></td>';
+                return '<td' + tdClass + '><div class="' + cssName + '">' + v + '</div></td>';
             }
             switch (col.type) {
                 case 'checkbox':
@@ -453,7 +458,7 @@
                 default:
                     break;
             }
-            return '<td><div class="' + cssName + '">' + val + '</div></td>';
+            return '<td' + tdClass + '><div class="' + cssName + '">' + val + '</div></td>';
         };
 
         //    5.5 树形列表的显示
@@ -557,7 +562,7 @@
         }
 
         // 7. 分页
-        function Pager(domTbody, pagesize, cssClass) {
+        function Pager(domTBody, pagesize, cssClass) {
             this.pageSize = pagesize || 20;
             this.pageCount = 0;
             this.recordCount = 0;
@@ -565,25 +570,25 @@
             var pagerClass = opts.pagerClass || 'grid-pager pager';
 
             var pagerDom = $('<div class="' + pagerClass + '"></div>');
-            domTbody.after(pagerDom);
-            var buttondomTbody = $('<div class="buttons"></div>');
+            domTBody.after(pagerDom);
+            var buttondomTBody = $('<div class="buttons"></div>');
             var info = $('<div class="info"></div>');
-            pagerDom.append(buttondomTbody);
+            pagerDom.append(buttondomTBody);
             pagerDom.append(info);
             var firstBtn = $('<a class="disabled"><i class="fa fa-fast-backward"></i></a>');
-            buttondomTbody.append(firstBtn);
+            buttondomTBody.append(firstBtn);
             var prevBtn = $('<a class="disabled"><i class="fa fa-backward"></i></a>');
-            buttondomTbody.append(prevBtn);
+            buttondomTBody.append(prevBtn);
             var nextBtn = $('<a class="disabled"><i class="fa fa-forward"></i></a>');
-            buttondomTbody.append('<b>第</b>');
+            buttondomTBody.append('<b>第</b>');
             var currentInput = $('<input value="1" type="text" maxlength="4" />');
-            buttondomTbody.append(currentInput);
-            buttondomTbody.append('<b>页</b>');
-            buttondomTbody.append(nextBtn);
+            buttondomTBody.append(currentInput);
+            buttondomTBody.append('<b>页</b>');
+            buttondomTBody.append(nextBtn);
             var lastBtn = $('<a class="disabled"><i class="fa fa-fast-forward"></i></a>');
-            buttondomTbody.append(lastBtn);
+            buttondomTBody.append(lastBtn);
             var pageSize = $('<select name="pageSize"><option value="20">每页20条</option><option value="30">每页30条</option><option value="50">每页50条</option></select>');
-            buttondomTbody.append(pageSize);
+            buttondomTBody.append(pageSize);
 
             this.addEventListener = function (fn) {
                 var that = this;
@@ -637,12 +642,14 @@
             };
 
             this.setPager = function (total, start) {
+                var that = this;
                 this.recordCount = total;
                 this.pageCount = Math.ceil(this.recordCount / this.pageSize);
                 firstBtn.removeClass('disabled');
                 prevBtn.removeClass('disabled');
                 nextBtn.removeClass('disabled');
                 lastBtn.removeClass('disabled');
+                currentInput.val(that.pageIndex);
                 if (this.pageIndex === 1) {
                     firstBtn.addClass('disabled');
                     prevBtn.addClass('disabled');
@@ -701,7 +708,7 @@
         // 9. 网络请求异常的通用处理
         //    9.1 请求成功，但返回数据异常
         function codeError(response) {
-            switch (response.code) {
+            switch (response.Code) {
                 case 1001:
                     // 未登录
                     layer.confirm('您尚未登录或登录信息已过期，请重新登录', {
@@ -750,7 +757,7 @@
                     break;
                 default:
                     // 其他错误
-                    layer.alert('异常：' + response.message, {
+                    layer.alert('异常：' + response.Message, {
                         icon: 2
                     });
                     break;
@@ -800,7 +807,7 @@
                     leftHtml += renderLeftRow(item, idx);
                     rightHtml += renderRightRow(item, idx);
                 });
-                getbodyTbody().html(html);
+                getBodyTbody().html(html);
                 if (leftCols.length > 0) {
                     getLeftTbody().html(leftHtml);
                 }
@@ -821,7 +828,7 @@
             if (!isMulti && selectedItem) {
                 items.push(selectedItem);
             } else {
-                $.each(doms.left.find(':checked').not('.checkall'), function (idx, item) {
+                $.each(doms.left.find(':checked'), function (idx, item) {
                     var index = $(item).val();
                     items.push(data[index]);
                 });
@@ -929,20 +936,18 @@
             }
         };
 
-        //  10.9 设置选中项
-        _this.set = function (val) {
-            if ($.isArray(val)) {
-                doms.left.find(':checked').not('.checkall').each(function () {
-                    if ($.inArray($(this).val(), val)) {
-                        $(this).attr('checked', true);
-                    } else {
-                        $(this).attr('checked', false);
-                    }
-                });
-            } else {
-                doms.left.find(':checked').attr('checked', false);
+        //   10.9 搜索
+        _this.search = function () {
+            if (isPager && pager) {
+                pager.pageIndex = 1;
             }
-        }
+            if (api) {
+                _this.pull();
+            } else {
+                _this.render();
+            }
+        };
+
 
         if (isAuto) {
             _this.pull();

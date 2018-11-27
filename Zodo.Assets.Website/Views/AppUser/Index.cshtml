@@ -33,13 +33,13 @@
                    data-grid="grid"
                    data-options='{"msg": "确认操作？"}'
                    class="btn btn-red btn-customer"><i class="fa fa-trash"></i>删除</a>
-                <a href="javascript:;" onclick="window.grid.reload()" class="btn btn-default"><i class="fa fa-refresh"></i>刷新列表</a>
+                <a href="javascript:;" onclick="window.grid.search()" class="btn btn-default"><i class="fa fa-refresh"></i>刷新列表</a>
             </div>
             <div class="col-6 content-right">
                 <form id="searchform" onsubmit="return false;">
                     @Html.AntiForgeryToken()
                     <input type="search" name="Key" placeholder="关键字" value="" />
-                    <button class="btn btn-blue" onclick="window.grid.reload()"><i class="fa fa-search"></i>搜索</button>
+                    <button class="btn btn-blue" onclick="window.grid.search()"><i class="fa fa-search"></i>搜索</button>
                 </form>
             </div>
         </div>

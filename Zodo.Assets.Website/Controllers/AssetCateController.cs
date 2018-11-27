@@ -103,8 +103,8 @@ namespace Zodo.Assets.Website.Controllers
         #region 私有方法
         private void InitUI()
         {
-            var depts = DeptUtil.GetSelectList();
-            var list = depts.ToSelectList("Id", "Name");
+            var cates = AssetCateUtil.Tree();
+            var list = cates.ToSelectList("Id", "Name");
             ViewBag.Parents = list;
         }
         #endregion

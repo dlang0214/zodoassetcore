@@ -38,7 +38,7 @@
                        data-options='{"title": "盘点详情", "width": 720, "height": 400, "before": null}'
                        class="btn btn-success btn-customer"><i class="fa fa-leaf"></i>详情</a>
                     <a href="/StockItem/Export/@Model.Id?title=@WebUtility.UrlEncode(Model.Title)" class="btn btn-green" target="_blank">导出Excel</a>
-                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.search();"><i class="fa fa-refresh"></i>刷新</a>
                 </div>
                 <div class="col-6 content-right">
                     <input type="hidden" name="StockId" value="@Model.Id" />
@@ -59,7 +59,7 @@
                         <option value="4">创建时间</option>
                     </select>
                     <input name="Key" type="search" value="" placeholder="资产名称" />
-                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.search()">
                 </div>
             </div>
         </form>

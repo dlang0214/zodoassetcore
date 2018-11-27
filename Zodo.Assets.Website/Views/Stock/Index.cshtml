@@ -48,7 +48,7 @@
                        data-options='{"msg": "确认删除盘点", "before": null}'
                        class="btn btn-red btn-customer"><i class="fa fa-trash-o"></i>删除</a>
 
-                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.search();"><i class="fa fa-refresh"></i>刷新</a>
                 </div>
                 <div class="col-4 content-right">
                     <select name="isFinish">
@@ -57,7 +57,7 @@
                         <option value="false">未完成</option>
                     </select>
                     <input name="Key" type="search" value="" placeholder="关键字" />
-                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.reload()">
+                    <input type="button" class="btn btn-blue" value="搜索" onclick="window.grid.search()">
                 </div>
             </div>
         </form>

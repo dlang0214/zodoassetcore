@@ -49,6 +49,9 @@
                             case "报废":
                                 state = "<span class='btn btn-mini btn-red'>" + Model.State + "</span>";
                                 break;
+                            case "故障":
+                                state = "<span class='btn btn-mini btn-orange'>" + Model.State + "</span>";
+                                break;
                             default:
                                 state = "<span class='btn btn-mini btn-default'>" + Model.State + "</span>";
                                 break;
@@ -91,6 +94,10 @@
                 <td class="control">@Model.Model</td>
                 <td class="label">序列号</td>
                 <td class="control">@Model.Imei</td>
+            </tr>
+            <tr>
+                <td class="label">规格</td>
+                <td colspan="5">@Model.Specification</td>
             </tr>
             <tr>
                 <td class="label">备注</td>

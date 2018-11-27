@@ -100,13 +100,13 @@ namespace Zodo.Assets.Core
         /// <summary>
         /// 所在部门
         /// </summary>
-        [MyDataField(UpdateIgnore = true)]
+        // [MyDataField(UpdateIgnore = true)]
         public int DeptId { get; set; }
 
         /// <summary>
         /// 当前使用人
         /// </summary>
-        [MyDataField(UpdateIgnore = true)]
+        // [MyDataField(UpdateIgnore = true)]
         public int AccountId { get; set; }
 
         /// <summary>

@@ -6,13 +6,13 @@
         // 要现实的列配置
         var cols = opts.columns;
         // 是否分页
-        var isPager = opts.pager == undefined ? false : opts.pager;
+        var isPager = opts.pager === undefined ? false : opts.pager;
         // 是否多选
-        var isMulti = opts.multi == undefined ? false : opts.multi;
+        var isMulti = opts.multi === undefined ? false : opts.multi;
         // 是否树形
-        var isTree = opts.tree == undefined ? false : opts.tree;
+        var isTree = opts.tree === undefined ? false : opts.tree;
         // 是否自动加载数据
-        var isAuto = opts.auto == undefined ? false : opts.auto;
+        var isAuto = opts.auto === undefined ? false : opts.auto;
         // 值所在的列
         var keyColumn = opts.keyColumn || 'id';
         // 层级所在的列
@@ -95,7 +95,7 @@
             widths.bodyTable += col.width;
         });
 
-        if (lastAutoWidthCol == null) {
+        if (lastAutoWidthCol === null) {
             lastAutoWidthCol = centerCols[centerCols.length - 1];
         }
 
@@ -124,7 +124,7 @@
                 } else {
                     centerColGroup += '<col width="' + col.width + '" />';
                 }
-                if (col.type == 'checkbox') {
+                if (col.type === 'checkbox') {
                     centerTHead += '<th class="content-center"><div class="cell"><input type="checkbox" class="checkall"></div></th>';
                 } else {
                     centerTHead += '<th><div class="cell">' + col.title + '</div></th>';
@@ -157,7 +157,7 @@
 
         //    1.2 控制显示dom
         function dataShow() {
-            if(!data || data.length == 0) {
+            if(!data || data.length === 0) {
                 doms.bodyTbody.html('<tr class="empty"><td colspan="' + cols.length + '">暂无数据</td></tr>');
             }
         }
@@ -250,7 +250,7 @@
 
         //    4.6 获取全选的checkbox
         function getCheckAll() {
-            if (doms.checkAll == null) {
+            if (doms.checkAll === null) {
                 doms.checkAll = _this.find('.checkall');
             }
             return doms.checkAll;
@@ -273,12 +273,18 @@
 
         //    5.4 渲染单元格
         function renderColumn(col, colData, index, level) {
-            var val = colData || '';
+            var val = '';
+            if ($.isNumeric(colData)) {
+                val = colData;
+            } else if (colData) {
+                val = colData;
+            }
             var cssName = 'cell';
-
             if (col.className) {
                 cssName += ' ' + col.className;
             }
+
+            var tdClassName = col.className ? ' class="' + col.className + '"' : '';
 
             //if (col.do != undefined) {
             //    var v = col.do(colData);
@@ -298,7 +304,7 @@
                 default:
                     break;
             }
-            return '<td class="' + cssName + '"><div class="cell">' + val + '</div></td>';
+            return '<td' + tdClassName + '><div class="cell">' + val + '</div></td>';
         };
 
         //    5.5 树形列表的显示
@@ -360,7 +366,7 @@
                     if (!$(this).prop('checked')) {
                         getCheckAll().prop('checked', false);
                     } else {
-                        if (data.length == _this.find(':checked').length) {
+                        if (data.length === _this.find(':checked').length) {
                             getCheckAll().prop('checked', true);
                         }
                     }
@@ -481,12 +487,14 @@
             };
 
             this.setPager = function (total, start) {
+                var that = this;
                 this.recordCount = total;
                 this.pageCount = Math.ceil(this.recordCount / this.pageSize);
                 firstBtn.removeClass('disabled');
                 prevBtn.removeClass('disabled');
                 nextBtn.removeClass('disabled');
                 lastBtn.removeClass('disabled');
+                currentInput.val(that.pageIndex);
                 if (this.pageIndex === 1) {
                     firstBtn.addClass('disabled');
                     prevBtn.addClass('disabled');
@@ -625,7 +633,7 @@
                 data = d;
             }
 
-            if(!data || data.length == 0) {
+            if(!data || data.length === 0) {
                 doms.bodyTbody.html('<tr class="empty"><td colspan="' + cols.length + '">暂无数据</td></tr>');
             } else {
                 $.each(data, function (idx, item) {
@@ -681,9 +689,9 @@
 
         //   10.4 拉取数据
         _this.pull = function () {
-            if (type == 'get' || type == 'GET') {
+            if (type === 'get' || type === 'GET') {
                 _this.get();
-            } else if (type == 'post' || type == 'POST') {
+            } else if (type === 'post' || type === 'POST') {
                 _this.post();
             } else {
                 console.log('不受支持的type参数。可选值[get, GET, post, POST]');
@@ -757,6 +765,17 @@
             }
         };
 
+        //   10.9 重新拉取数据
+        _this.search = function () {
+            if (isPager && pager) {
+                pager.pageIndex = 1;
+            }
+            if (api) {
+                _this.pull();
+            } else {
+                _this.render();
+            }
+        };
 
         if (isAuto) {
             _this.pull();

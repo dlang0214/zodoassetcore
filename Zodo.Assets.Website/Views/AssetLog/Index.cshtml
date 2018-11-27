@@ -20,7 +20,7 @@
                        data-grid="grid"
                        data-options='{"title": "详情", "width": 720, "height": 400, "before": null}'
                        class="btn btn-blue btn-customer"><i class="fa fa-pencil-square"></i>详情</a>
-                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.reload();"><i class="fa fa-refresh"></i>刷新</a>
+                    <a id="btn-refresh" href="javascript:;" class="btn btn-default" onclick="window.grid.search();"><i class="fa fa-refresh"></i>刷新</a>
                 </div>
                 <div class="col-6 content-right">
                     <select name="Type">
@@ -31,7 +31,7 @@
                         <option value="归还">归还</option>
                     </select>
                     <input name="Key" type="search" value="" placeholder="关键字" />
-                    <input type="button" class="btn btn-blue" onclick="window.grid.reload()" value="搜索">
+                    <input type="button" class="btn btn-blue" onclick="window.grid.search()" value="搜索">
                     <a href="javascript:;" class="btn btn-default search-toggle-button"><i class="fa fa-filter"></i>高级筛选</a>
                 </div>
             </div>
