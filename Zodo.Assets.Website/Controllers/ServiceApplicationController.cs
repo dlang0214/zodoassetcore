@@ -1,7 +1,5 @@
 ﻿using HZC.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System;
@@ -9,14 +7,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Net;
-using System.Web;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
-    public class ServiceApplicationController : Controller
+    public class ServiceApplicationController : MvcController
     {
         private ServiceApplyService service = new ServiceApplyService();
 

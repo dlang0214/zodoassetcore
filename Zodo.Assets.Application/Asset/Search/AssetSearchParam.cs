@@ -2,7 +2,7 @@
 
 namespace Zodo.Assets.Application
 {
-    public partial class AssetSearchParam : ISearchParam
+    public class AssetSearchParam : ISearchParam
     {
         public string Key { get; set; }
 
@@ -20,15 +20,15 @@ namespace Zodo.Assets.Application
 
         public string Healthy { get; set; }
 
-        public bool isContainSubDept { get; set; } = false;
+        public bool IsContainSubDept { get; set; } = false;
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().AndEqual("IsDel", false);
+            var util = MySearchUtil.New().AndEqual("IsDel", false);
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "Name", "Code", "FinancialCode", "Band", "Imei", "Model", "Source", "Remark", "Position", "DeptName", "AccountName" }, Key.Trim());
+                util.AndContains(new[] { "Name", "Code", "FinancialCode", "Band", "Imei", "Model", "Source", "Remark", "Position", "DeptName", "AccountName" }, Key.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(State))
@@ -38,7 +38,7 @@ namespace Zodo.Assets.Application
 
             if (DeptId.HasValue)
             {
-                if (!isContainSubDept)
+                if (!IsContainSubDept)
                 {
                     util.AndEqual("DeptId", (int)DeptId);
                 }
@@ -56,8 +56,11 @@ namespace Zodo.Assets.Application
                 {
                     util.And("1=2");
                 }
-                var ids = AssetCateUtil.GetSelfAndChildrenIds(cate.Id);
-                util.AndIn("AssetCateId", ids);
+                else
+                {
+                    var ids = AssetCateUtil.GetSelfAndChildrenIds(cate.Id);
+                    util.AndIn("AssetCateId", ids);
+                }
             }
 
             if (AccountId.HasValue && AccountId > 0)

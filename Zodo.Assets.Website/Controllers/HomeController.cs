@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using HZC.Infrastructure;
+using log4net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Zodo.Assets.Website.Models;
-using System.IO;
-using HZC.Infrastructure;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Diagnostics;
-using log4net;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Zodo.Assets.Application;
+using Zodo.Assets.Website.Models;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class HomeController : MvcController
     {
         private ILog log = LogManager.GetLogger(Startup.LogResposition.Name, "");

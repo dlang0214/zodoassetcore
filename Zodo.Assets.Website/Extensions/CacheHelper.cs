@@ -16,11 +16,7 @@ namespace Zodo.Assets.Website.Extensions
         public T Get<T>(string key)
         {
             var str = Get(key);
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                return default(T);
-            }
-            return JsonConvert.DeserializeObject<T>(str);
+            return string.IsNullOrWhiteSpace(str) ? default(T) : JsonConvert.DeserializeObject<T>(str);
         }
 
         public bool Set<T>(string key, T val)
@@ -49,10 +45,8 @@ namespace Zodo.Assets.Website.Extensions
             {
                 return string.Empty;
             }
-            else
-            {
-                return Encoding.UTF8.GetString(val);
-            }
+
+            return Encoding.UTF8.GetString(val);
         }
 
         public bool Set(string key, string val)

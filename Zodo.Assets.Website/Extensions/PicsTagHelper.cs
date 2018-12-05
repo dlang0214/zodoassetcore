@@ -12,9 +12,7 @@ namespace Zodo.Assets.Website
             output.Content.Clear();
             output.Attributes.Add("class", "uploader-thumbs");
 
-            
-
-            string html = "";
+            var html = "";
             if (!string.IsNullOrWhiteSpace(Val))
             {
                 var urls = Val.Split(',');

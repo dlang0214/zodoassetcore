@@ -6,7 +6,7 @@ namespace Zodo.Assets.Application
     /// 指定类型的树模型
     /// </summary>
     /// <typeparam name="T">主键类型</typeparam>
-    public interface ITreeModel<EntityT, T>
+    public interface ITreeModel<TEntity, T>
     {
         T ParentId { get; set; }
 
@@ -23,7 +23,7 @@ namespace Zodo.Assets.Application
         /// <summary>
         /// 下属节点
         /// </summary>
-        List<EntityT> Children { get; set; }
+        List<TEntity> Children { get; set; }
     }
 
     public interface ITreeModel<T> : ITreeModel<T, int>

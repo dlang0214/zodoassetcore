@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using HZC.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using HZC.Infrastructure;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Zodo.Assets.Website.Controllers
 {
+    [Authorize]
     public class UploadController : Controller
     {
         private readonly IHostingEnvironment _hostingEnvironment;

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using HZC.Infrastructure;
 using Zodo.Assets.Core;
 
@@ -39,12 +36,12 @@ namespace Zodo.Assets.Application
                 return "申请人不能为空";
             }
 
-            if (entity.RequireCompleteAt == null || !ValidDate(entity.RequireCompleteAt))
+            if (!ValidDate(entity.RequireCompleteAt))
             {
                 return "要求办结时间不合法";
             }
 
-            if (entity.ApplyAt == null || !ValidDate(entity.ApplyAt))
+            if (!ValidDate(entity.ApplyAt))
             {
                 return "申请日期不合法";
             }

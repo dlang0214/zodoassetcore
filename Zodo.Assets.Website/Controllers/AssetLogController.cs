@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using HZC.Infrastructure;
-using Zodo.Assets.Core;
-using Zodo.Assets.Application;
+﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Zodo.Assets.Application;
 
 namespace Zodo.Assets.Website.Controllers
 {

@@ -6,38 +6,38 @@ namespace Zodo.Assets.Application
 {
     public class DeptUtil
     {
-        private static List<DeptDto> _depts = null;
+        public static List<DeptDto> Depts { get; set; }
 
-        private static List<DeptTreeDto> _tree = null;
+        public static Dictionary<int, int[]> LevelPath { get; set; } = new Dictionary<int, int[]>();
 
-        private static List<DeptSelectListItemDto> _selectItems = null;
+        public static List<DeptSelectListItemDto> SelectItems { get; set; }
 
-        private static Dictionary<int, int[]> _levelPath = new Dictionary<int, int[]>();
+        public static List<DeptTreeDto> TreeList { get; set; }
 
         #region 基础数据
         public static List<DeptDto> All()
         {
-            if (_depts == null)
+            if (Depts == null)
             {
                 Init();
             }
-            return _depts;
+            return Depts;
         }
 
         public static DeptDto Get(int id)
         {
-            return All().Where(a => a.Id == id).SingleOrDefault();
+            return All().SingleOrDefault(a => a.Id == id);
         }
 
         private static void Init()
         {
-            DeptService service = new DeptService();
+            var service = new DeptService();
             var depts = service.Fetch(new DeptSearchParam());
 
-            _depts = new List<DeptDto>();
+            Depts = new List<DeptDto>();
             Dg(depts, "");
 
-            void Dg(List<DeptDto> source, string levelPath = ",", int parent = 0, int level = 1)
+            void Dg(IReadOnlyCollection<DeptDto> source, string levelPath = ",", int parent = 0, int level = 1)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 foreach (var r in root)
@@ -49,19 +49,16 @@ namespace Zodo.Assets.Application
                         ParentId = r.ParentId,
                         Sort = r.Sort
                     };
-                    _depts.Add(temp);
+                    Depts.Add(temp);
 
                     temp.Level = level;
-                    temp.LevelPath = levelPath + r.Id.ToString() + ",";
+                    temp.LevelPath = levelPath + r.Id + ",";
 
-                    if (source.Where(s => s.ParentId == r.Id).Any())
-                    {
-                        level++;
+                    if (source.All(s => s.ParentId != r.Id)) continue;
 
-                        Dg(source, temp.LevelPath, r.Id, level);
-
-                        level--;
-                    }
+                    level++;
+                    Dg(source, temp.LevelPath, r.Id, level);
+                    level--;
                 }
             }
         }
@@ -70,26 +67,29 @@ namespace Zodo.Assets.Application
         #region 清理缓存
         public static void Clear()
         {
-            _depts = null;
-            _tree = null;
-            _selectItems = null;
-            _levelPath.Clear();
+            Depts = null;
+            TreeList = null;
+            SelectItems = null;
+            LevelPath.Clear();
         }
         #endregion
 
         #region 树形数据
         public static List<DeptTreeDto> Tree()
         {
-            if (_tree == null)
+            if (TreeList == null)
             {
                 InitTree();
             }
-            return _tree;
+            return TreeList;
         }
 
         public static void InitTree()
         {
-            List<DeptTreeDto> Dg(List<DeptDto> source, int parent = 0)
+            var all = All();
+            TreeList = Dg(all);
+
+            List<DeptTreeDto> Dg(IReadOnlyCollection<DeptDto> source, int parent = 0)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 var result = new List<DeptTreeDto>();
@@ -105,7 +105,7 @@ namespace Zodo.Assets.Application
                     };
                     result.Add(temp);
                     var children = source.Where(c => c.ParentId == r.Id);
-                    if (children.Count() > 0)
+                    if (children.Any())
                     {
                         temp.IsLeaf = false;
                         temp.Children = Dg(source, r.Id);
@@ -118,17 +118,13 @@ namespace Zodo.Assets.Application
                 }
                 return result;
             }
-
-            var all = All();
-            _tree = Dg(all);
         }
         #endregion
 
         #region 链表
         public static int[] GetSelfAndChildrenIds(int id)
         {
-            int[] result;
-            if (_levelPath.TryGetValue(id, out result))
+            if (LevelPath.TryGetValue(id, out var result))
             {
                 return result;
             }
@@ -137,17 +133,17 @@ namespace Zodo.Assets.Application
                 var dept = Get(id);
                 if (dept == null)
                 {
-                    result = new int[] { };
+                    return new int[] { };
                 }
                 result = CalcSelfAndChildrenIds(id);
-                _levelPath.Add(id, result);
+                LevelPath.Add(id, result);
                 return result;
             }
         }
 
         private static int[] CalcSelfAndChildrenIds(int id)
         {
-            string key = "," + id.ToString() + ",";
+            var key = "," + id + ",";
             return All()
                    .Where(d => d.LevelPath.Contains(key))
                    .Select(d => d.Id)
@@ -158,36 +154,35 @@ namespace Zodo.Assets.Application
         #region 部门下拉框数据源
         public static List<DeptSelectListItemDto> GetSelectList()
         {
-            if (_selectItems == null)
+            if (SelectItems != null) return SelectItems;
+
+            SelectItems = new List<DeptSelectListItemDto>();
+
+            var depts = All();
+            foreach (var d in depts)
             {
-                _selectItems = new List<DeptSelectListItemDto>();
-
-                var depts = All();
-                foreach (var d in depts)
-                {
-                    _selectItems.Add(new DeptSelectListItemDto { Id = d.Id, Name = showName(d.Name, d.Level) });
-                }
-
-                string showName(string txt, int level)
-                {
-                    string str = "";
-                    if (level > 1)
-                    {
-                        for (int i = 1; i < level; i++)
-                        {
-                            str += HttpUtility.HtmlDecode("&nbsp;&nbsp;&nbsp;&nbsp;");
-                        }
-                        str += "|- " + txt;
-                    }
-                    else
-                    {
-                        str = txt;
-                    }
-
-                    return str;
-                }
+                SelectItems.Add(new DeptSelectListItemDto { Id = d.Id, Name = ShowName(d.Name, d.Level) });
             }
-            return _selectItems;
+
+            string ShowName(string txt, int level)
+            {
+                var str = string.Empty;
+                if (level > 1)
+                {
+                    for (var i = 1; i < level; i++)
+                    {
+                        str += HttpUtility.HtmlDecode("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    }
+                    str += "|- " + txt;
+                }
+                else
+                {
+                    str = txt;
+                }
+
+                return str;
+            }
+            return SelectItems;
         } 
         #endregion
     }

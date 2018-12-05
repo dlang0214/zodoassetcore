@@ -10,7 +10,7 @@ namespace Zodo.Assets.Application
 {
     public class UserService
     {
-        private MyDbUtil db = new MyDbUtil();
+        private readonly MyDbUtil _db = new MyDbUtil();
 
         #region 创建
         public Result<int> Create(User u, IAppUser user)
@@ -18,13 +18,13 @@ namespace Zodo.Assets.Application
             var error = Validate(u);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                return ResultUtil.Do(ResultCodes.验证失败, 0, error);
             }
             u.Pw = AESEncriptUtil.Encrypt("123456");
             u.Version = Guid.NewGuid().ToString("N");
             u.BeforeCreate(user);
-            var id = db.Create<User>(u);
-            return id > 0 ?  ResultUtil.Success<int>(id) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            var id = _db.Create(u);
+            return id > 0 ?  ResultUtil.Success(id) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
         #endregion
 
@@ -34,27 +34,20 @@ namespace Zodo.Assets.Application
             var error = Validate(u);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                return ResultUtil.Do(ResultCodes.验证失败, 0, error);
             }
             
             u.Version = Guid.NewGuid().ToString("N");
             u.BeforeUpdate(user);
-            var id = db.Update<User>(u);
-            return id > 0 ? ResultUtil.Success<int>(u.Id) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            var id = _db.Update(u);
+            return id > 0 ? ResultUtil.Success(u.Id) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
         #endregion
 
         #region 保存
         public Result<int> Save(User u, IAppUser user)
         {
-            if (u.Id <= 0)
-            {
-                return Create(u, user);
-            }
-            else
-            {
-                return Update(u, user);
-            }
+            return u.Id <= 0 ? Create(u, user) : Update(u, user);
         }
         #endregion
 
@@ -71,7 +64,7 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "admin用户禁止删除");
             }
 
-            var row = db.Remove<User>(id);
+            var row = _db.Remove<User>(id);
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败);
         }
         #endregion
@@ -95,14 +88,14 @@ namespace Zodo.Assets.Application
         #region 加载实体
         public User Load(int id)
         {
-            return db.Load<User>(id);
+            return _db.Load<User>(id);
         }
         #endregion
 
         #region 列表
         public List<AppUserDto> Fetch(UserSearchParam param)
         {
-            return db.Fetch<User>(param.ToSearchUtil()).Select(u => new AppUserDto
+            return _db.Fetch<User>(param.ToSearchUtil()).Select(u => new AppUserDto
             {
                 Id = u.Id,
                 Name = u.Name
@@ -125,23 +118,16 @@ namespace Zodo.Assets.Application
             }
 
             entity.Pw = AESEncriptUtil.Encrypt(newPw);
-            string sql = "UPDATE Base_User SET Pw=@Pw WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, Pw = entity.Pw });
-            if (row > 0)
-            {
-                return ResultUtil.Success();
-            }
-            else
-            {
-                return ResultUtil.Do(ResultCodes.数据库操作失败);
-            }
+            const string sql = "UPDATE Base_User SET Pw=@Pw WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, entity.Pw });
+            return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败);
         }
         #endregion
 
         #region 登录
         public User Login(string name, string pw)
         {
-            return db.Load<User>(MySearchUtil.New()
+            return _db.Load<User>(MySearchUtil.New()
                 .AndEqual("Name", name)
                 .AndEqual("IsDel", false));
         }
@@ -150,7 +136,7 @@ namespace Zodo.Assets.Application
         #region 初始化admin
         public User GetAdmin()
         {
-            var u = db.Load<User>(MySearchUtil.New()
+            var u = _db.Load<User>(MySearchUtil.New()
                 .AndEqual("Name", "admin"));
             return u;
         }
@@ -164,15 +150,11 @@ namespace Zodo.Assets.Application
                 return "用户名称不能为空";
             }
 
-            var count = db.GetCount<User>(MySearchUtil.New()
+            var count = _db.GetCount<User>(MySearchUtil.New()
                 .AndEqual("Name", entity.Name.Trim())
                 .AndNotEqual("Id", entity.Id)
                 .AndEqual("IsDel", false));
-            if (count > 0)
-            {
-                return "用户已存在";
-            }
-            return string.Empty;
+            return count > 0 ? "用户已存在" : string.Empty;
         }
         #endregion
     }

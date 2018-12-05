@@ -11,7 +11,7 @@ namespace Zodo.Assets.Website
             {
                 throw new ArgumentNullException("identity");
             }
-            Claim claim = identity.FindFirst(claimType);
+            var claim = identity.FindFirst(claimType);
             if (claim != null)
             {
                 return claim.Value;
@@ -35,8 +35,7 @@ namespace Zodo.Assets.Website
                 throw new ArgumentNullException("identity");
             }
             var idStr = identity.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-            int id = 0;
-            Int32.TryParse(idStr, out id);
+            int.TryParse(idStr, out var id);
             return id;
         }
 
@@ -69,10 +68,9 @@ namespace Zodo.Assets.Website
                 throw new ArgumentException("identity");
             }
 
-            int result = 0;
             var deptId = identity.FindFirstValue("WeixinDeptId");
 
-            Int32.TryParse(deptId, out result);
+            int.TryParse(deptId, out var result);
             return result;
         }
 

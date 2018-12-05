@@ -1,4 +1,5 @@
-﻿namespace Zodo.Assets.Application
+﻿// ReSharper disable CheckNamespace
+namespace Zodo.Assets.Application
 {
     public class AssetSelectDto
     {

@@ -5,35 +5,34 @@ namespace Zodo.Assets.Application
 {
     public class AssetCateUtil
     {
-        private static List<AssetCateDto> _cates = null;
+        private static List<AssetCateTreeDto> _tree;
 
-        private static List<AssetCateTreeDto> _tree = null;
-
-        private static Dictionary<int, int[]> _levelPath = new Dictionary<int, int[]>();
+        public static List<AssetCateDto> Cates { get; set; }
+        public static Dictionary<int, int[]> LevelPath { get; set; } = new Dictionary<int, int[]>();
 
         #region 基础数据
         public static List<AssetCateDto> All()
         {
-            if (_cates == null)
+            if (Cates == null)
             {
                 Init();
             }
-            return _cates;
+            return Cates;
         }
 
         public static AssetCateDto Get(int id)
         {
-            return All().Where(a => a.Id == id).SingleOrDefault();
+            return All().SingleOrDefault(a => a.Id == id);
         }
 
         private static void Init()
         {
-            AssetCateService service = new AssetCateService();
+            var service = new AssetCateService();
             var cates = service.Fetch();
 
-            _cates = new List<AssetCateDto>();
+            Cates = new List<AssetCateDto>();
             Dg(cates, "");
-            void Dg(List<AssetCateDto> source, string levelPath, int parent = 0, int level = 1)
+            void Dg(IReadOnlyCollection<AssetCateDto> source, string levelPath, int parent = 0, int level = 1)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 foreach (var r in root)
@@ -45,19 +44,16 @@ namespace Zodo.Assets.Application
                         ParentId = r.ParentId,
                         Sort = r.Sort
                     };
-                    _cates.Add(temp);
+                    Cates.Add(temp);
 
                     temp.Level = level;
-                    temp.LevelPath = levelPath + "," + r.Id.ToString();
+                    temp.LevelPath = levelPath + "," + r.Id;
 
-                    if (source.Where(s => s.ParentId == r.Id).Any())
-                    {
-                        level++;
+                    if (source.All(s => s.ParentId != r.Id)) continue;
 
-                        Dg(source, temp.LevelPath, r.Id, level);
-
-                        level--;
-                    }
+                    level++;
+                    Dg(source, temp.LevelPath, r.Id, level);
+                    level--;
                 }
             }
         }
@@ -66,9 +62,9 @@ namespace Zodo.Assets.Application
         #region 清理缓存
         public static void Clear()
         {
-            _cates = null;
+            Cates = null;
             _tree = null;
-            _levelPath.Clear();
+            LevelPath.Clear();
         }
         #endregion
 
@@ -84,7 +80,7 @@ namespace Zodo.Assets.Application
 
         public static void InitTree()
         {
-            List<AssetCateTreeDto> Dg(List<AssetCateDto> source, int parent = 0)
+            List<AssetCateTreeDto> Dg(IReadOnlyCollection<AssetCateDto> source, int parent = 0)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 var result = new List<AssetCateTreeDto>();
@@ -100,7 +96,7 @@ namespace Zodo.Assets.Application
                     };
                     result.Add(temp);
                     var children = source.Where(c => c.ParentId == r.Id);
-                    if (children.Count() > 0)
+                    if (children.Any())
                     {
                         temp.IsLeaf = false;
                         temp.Children = Dg(source, r.Id);
@@ -127,27 +123,25 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public static int[] GetSelfAndChildrenIds(int id)
         {
-            int[] result;
-            if (_levelPath.TryGetValue(id, out result))
+            if (LevelPath.TryGetValue(id, out var result))
             {
                 return result;
             }
-            else
+
+            var cate = Get(id);
+            if (cate == null)
             {
-                var dept = Get(id);
-                if (dept == null)
-                {
-                    result = new int[] { };
-                }
-                result = CalcSelfAndChildrenIds(id);
-                _levelPath.Add(id, result);
-                return result;
+                return new int[] { };
             }
+
+            result = CalcSelfAndChildrenIds(id);
+            LevelPath.Add(id, result);
+            return result;
         }
 
         private static int[] CalcSelfAndChildrenIds(int id)
         {
-            string key = "," + id.ToString();
+            var key = "," + id;
             return All()
                    .Where(d => d.LevelPath.Contains(key))
                    .Select(d => d.Id)

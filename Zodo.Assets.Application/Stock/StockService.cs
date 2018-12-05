@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using HZC.Database;
 using HZC.Infrastructure;
 using HZC.SearchUtil;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Zodo.Assets.Core;
 using Zodo.Assets.Services;
 
@@ -26,7 +25,7 @@ namespace Zodo.Assets.Application
             var error = ValidCreate(t, user);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                return ResultUtil.Do(ResultCodes.验证失败, 0, error);
             }
             t.BeforeCreate(user);
             //KeyValuePairList sqls = new KeyValuePairList();
@@ -42,9 +41,9 @@ namespace Zodo.Assets.Application
             //    UserName = user.Name
             //});
             //var result = db.ExecuteTran(sqls);
-            var id = db.Create<Stock>(t);
+            var id = db.Create(t);
 
-            string sql = @"
+            const string sql = @"
                 INSERT INTO [Asset_StockItem] (
                     StockId,IsFinish,AssetId,AssetCode,AssetName,DeptId,DeptName,AccountId,AccountName,Position,
                     CheckAt,CheckBy,Checkor,CheckResult,CheckMethod,Remark,IsDel,CreateAt,CreateBy,Creator,UpdateAt,UpdateBy,Updator) 
@@ -53,7 +52,7 @@ namespace Zodo.Assets.Application
                 WHERE Code<>'' AND Code IS NOT NULL AND IsDel=0 AND [State]<>'报废'";
             db.Execute(sql, new { StockId = id, UserId = user.Id, UserName = user.Name });
 
-            return id > 0 ? ResultUtil.Success<int>(0) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            return id > 0 ? ResultUtil.Success(0) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
 
         /// <summary>
@@ -68,11 +67,11 @@ namespace Zodo.Assets.Application
             var error = ValidCreate(t, user);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                return ResultUtil.Do(ResultCodes.验证失败, 0, error);
             }
             t.BeforeCreate(user);
-            var id = db.Create<Stock>(t);
-            return id > 0 ? ResultUtil.Success<int>(0) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            var id = db.Create(t);
+            return id > 0 ? ResultUtil.Success(0) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
 
         /// <summary>
@@ -84,24 +83,16 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result SetItems(int stockId, int[] assetIds, IAppUser user)
         {
-            string sql = "SELECT AssetId FROM Asset_StockItem WHERE StockId=@Id AND IsDel=0";
-            var ids = db.FetchBySql<int>(sql, new { Id = stockId });
-            List<int> realIds = new List<int>();
-            if (ids.Count() > 0)
-            {
-                realIds = assetIds.Where(id => !ids.Contains(id)).ToList();
-            }
-            else
-            {
-                realIds = assetIds.ToList();
-            }
+            var sql = "SELECT AssetId FROM Asset_StockItem WHERE StockId=@Id AND IsDel=0";
+            var ids = db.FetchBySql<int>(sql, new { Id = stockId }).ToList();
+            var realIds = ids.Any() ? assetIds.Where(id => !ids.Contains(id)).ToList() : assetIds.ToList();
+
             if (realIds.Count == 0)
             {
                 return ResultUtil.Do(ResultCodes.数据不存在, "所选资产已存在");
             }
-            else
-            {
-                sql = @"
+
+            sql = @"
                     INSERT INTO [Asset_StockItem] (
                         StockId,IsFinish,AssetId,AssetCode,AssetName,DeptId,DeptName,AccountId,AccountName,Position,
                         CheckAt,CheckBy,Checkor,CheckResult,CheckMethod,Remark,IsDel,CreateAt,CreateBy,Creator,UpdateAt,UpdateBy,Updator,
@@ -109,9 +100,8 @@ namespace Zodo.Assets.Application
                     SELECT @StockId,0,Id,Code,Name,DeptId,DeptName,AccountId,AccountName,Position,null,null,null,0,null,'',0,
                         GETDATE(),@UserId,@UserName,GETDATE(),@UserId,@UserName,FinancialCode,Healthy,State FROM [AssetView] 
                     WHERE IsDel=0 AND Id IN @Ids";
-                var rows = db.Execute(sql, new { StockId = stockId, Ids = realIds, UserId = user.Id, UserName = user.Name });
-                return rows > 0 ? ResultUtil.Success<int>(rows) : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
-            }
+            var rows = db.Execute(sql, new { StockId = stockId, Ids = realIds, UserId = user.Id, UserName = user.Name });
+            return rows > 0 ? ResultUtil.Success(rows) : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
         #endregion
 
@@ -149,7 +139,7 @@ namespace Zodo.Assets.Application
             });
             var result = db.ExecuteTran(sqls);
 
-            return result ? ResultUtil.Success<int>(0) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            return result ? ResultUtil.Success(0) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
         #endregion
 
@@ -185,14 +175,14 @@ namespace Zodo.Assets.Application
         #region 分页列表
         public PageList<Stock> Query(int pageIndex, int pageSize, bool? isFinish = null, string key = "")
         {
-            MySearchUtil util = MySearchUtil.New().OrderByDesc("UpdateAt").AndEqual("IsDel", false);
+            var util = MySearchUtil.New().OrderByDesc("UpdateAt").AndEqual("IsDel", false);
             if (isFinish.HasValue)
             {
                 util.AndEqual("IsFinish", isFinish.Value);
             }
             if (!string.IsNullOrWhiteSpace(key))
             {
-                util.AndContains(new string[] { "Title", "Remark" }, key.Trim());
+                util.AndContains(new[] { "Title", "Remark" }, key.Trim());
             }
             return db.Query<Stock>(util, pageIndex, pageSize);
         }
@@ -232,7 +222,7 @@ namespace Zodo.Assets.Application
 
         public int RunningStockCount()
         {
-            MySearchUtil util = new MySearchUtil();
+            var util = new MySearchUtil();
             util.AndEqual("IsDel", false).AndEqual("IsFinish", false);
 
             return db.GetCount<Stock>(util);

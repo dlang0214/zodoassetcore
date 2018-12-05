@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Zodo.Assets.Website.Extensions
 {
+    [WeixinUserFiler]
     public class WeixinWorkController : Controller
     {
         public WeixinUser WxUser
@@ -18,7 +18,7 @@ namespace Zodo.Assets.Website.Extensions
                     u.DeptId = User.GetWeixinDeptId();
                     u.DeptName = User.GetWeixinDeptName();
 
-                    HttpContext.Session.Set<WeixinUser>("WeixinUser", u);
+                    HttpContext.Session.Set("WeixinUser", u);
                     return u;
                 }
                 else

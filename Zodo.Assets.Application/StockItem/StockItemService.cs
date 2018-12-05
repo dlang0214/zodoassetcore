@@ -13,7 +13,7 @@ namespace Zodo.Assets.Application
     /// </summary>
     public class StockItemService
     {
-        private MyDbUtil db = new MyDbUtil();
+        private readonly MyDbUtil _db = new MyDbUtil();
 
         /// <summary>
         /// 手动盘点
@@ -26,13 +26,13 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result DirectCheck(int assetId, int stockId, int result, int method, string checkor)
         {
-            MySearchUtil util = MySearchUtil.New()
+            var util = MySearchUtil.New()
                 .AndEqual("IsDel", false)
                 .AndEqual("IsFinish", false)
                 .AndEqual("StockId", stockId)
                 .AndEqual("AssetId", assetId);
 
-            var item = db.Load<StockItem>(util);
+            var item = _db.Load<StockItem>(util);
             if (item == null)
             {
                 return ResultUtil.Do(ResultCodes.验证失败, "请求的资产未记录在本次盘点内");
@@ -42,13 +42,13 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "该资产已经盘点");
             }
 
-            string sql = @"
+            const string sql = @"
                 UPDATE [Asset_StockItem] SET 
                     CheckAt=GETDATE(),Checkor=@Checkor,CheckResult=@Result,
                     CheckMethod=@Method,UpdateAt=GETDATE(),Updator=@Checkor 
                 WHERE Id=@Id;
                 UPDATE [Asset_Asset] SET LastCheckTime=GETDATE() WHERE Id=@AssetId;";
-            var row = db.Execute(sql, new { Checkor = checkor, Result = result, Method = method, Id = item.Id, AssetId = item.AssetId });
+            var row = _db.Execute(sql, new { Checkor = checkor, Result = result, Method = method, item.Id, item.AssetId });
 
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "操作失败");
         }
@@ -61,14 +61,14 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result<StockItem> Load(int assetId, int stockId)
         {
-            MySearchUtil util = MySearchUtil.New()
+            var util = MySearchUtil.New()
                 .AndEqual("IsDel", false)
                 .AndEqual("IsFinish", false)
                 .AndEqual("StockId", stockId)
                 .AndEqual("AssetId", assetId);
 
-            var item = db.Load<StockItem>(util);
-            return item == null ? ResultUtil.Do<StockItem>(ResultCodes.数据不存在, null) : ResultUtil.Success<StockItem>(item);
+            var item = _db.Load<StockItem>(util);
+            return item == null ? ResultUtil.Do<StockItem>(ResultCodes.数据不存在, null) : ResultUtil.Success(item);
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result LoadDto(int assetId, int stockId)
         {
-            var entity = db.LoadBySql<StockItemDto>(@"
+            var entity = _db.LoadBySql<StockItemDto>(@"
                 SELECT * FROM StockItemView WHERE AssetId=@AssetId AND StockId=@StockId AND IsDel=0",
                 new { AssetId = assetId, StockId = stockId });
-            return entity == null ? ResultUtil.Do<StockItemDto>(ResultCodes.数据不存在, null) : ResultUtil.Success<StockItemDto>(entity);
+            return entity == null ? ResultUtil.Do<StockItemDto>(ResultCodes.数据不存在, null) : ResultUtil.Success(entity);
         }
 
         /// <summary>
@@ -102,13 +102,22 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.数据不存在, "请求的记录不存在");
             }
 
-            string sql = @"
+            const string sql = @"
                 UPDATE [Asset_StockItem] SET 
                     CheckAt=GETDATE(),Checkor=@Checkor,CheckResult=@Result,
                     CheckMethod=@Method,UpdateAt=GETDATE(),Updator=@Checkor,Remark=@Remark
                 WHERE Id=@Id;
                 UPDATE [Asset_Asset] SET LastCheckTime=GETDATE() WHERE Id=@AssetId;";
-            var row = db.Execute(sql, new { Checkor = checkor, Result = result, Method = method, Id = stockItemId, AssetId = entity.AssetId, Remark = remark });
+            var row = _db.Execute(sql,
+                new
+                {
+                    Checkor = checkor,
+                    Result = result,
+                    Method = method,
+                    Id = stockItemId,
+                    entity.AssetId,
+                    Remark = remark
+                });
 
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "操作失败");
         }
@@ -120,7 +129,7 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public StockItem Load(int id)
         {
-            return db.Load<StockItem>(id);
+            return _db.Load<StockItem>(id);
         }
 
         /// <summary>
@@ -130,8 +139,8 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public IEnumerable<StockItemDto> FetchDto(StockItemSearchParam param)
         {
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Fetch<StockItemDto>(util, "StockItemView");
+            var util = param.ToSearchUtil();
+            return _db.Fetch<StockItemDto>(util, "StockItemView");
         }
     }
 }

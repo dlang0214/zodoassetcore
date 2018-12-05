@@ -2,7 +2,7 @@
 
 namespace Zodo.Assets.Services
 {
-    public partial class StockItemDto
+    public class StockItemDto
     {
         public int Id { get; set; }
 

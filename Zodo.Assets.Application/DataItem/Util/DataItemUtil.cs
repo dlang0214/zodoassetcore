@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
@@ -17,7 +15,7 @@ namespace Zodo.Assets.Application
 
         private static void Init()
         {
-            DataItemService service = new DataItemService();
+            var service = new DataItemService();
             _items = service.Fetch().ToList();
         }
 
@@ -32,33 +30,19 @@ namespace Zodo.Assets.Application
 
         public static DataItem Load(string key)
         {
-            return All().Where(a => a.K == key).SingleOrDefault();
+            return All().SingleOrDefault(a => a.K == key);
         }
 
         public static string GetValue(string key)
         {
             var di = Load(key);
-            if (di == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return di.V;
-            }
+            return di == null ? string.Empty : di.V;
         }
 
         public static string[] GetValues(string key)
         {
             var str = GetValue(key);
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                return new string[] { };
-            }
-            else
-            {
-                return str.Split('|');
-            }
+            return string.IsNullOrWhiteSpace(str) ? new string[] { } : str.Split('|');
         }
     }
 }

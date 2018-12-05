@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-
-namespace Zodo.Assets.Application
+﻿namespace Zodo.Assets.Application
 {
     /// <summary>
     /// 部门缓存实体

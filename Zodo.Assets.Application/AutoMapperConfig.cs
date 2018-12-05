@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Zodo.Assets.Core;
 using AutoMapper;
+using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
 {

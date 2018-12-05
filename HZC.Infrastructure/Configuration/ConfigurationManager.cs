@@ -27,7 +27,7 @@ namespace HZC.Infrastructure
         /// <summary>
         /// 最终配置文件路径
         /// </summary>
-        private static string _configPath = null;
+        private static string _configPath;
 
         /// <summary>
         /// 配置节点关键字
@@ -42,12 +42,12 @@ namespace HZC.Infrastructure
         /// <summary>
         /// 最终修改时间戳
         /// </summary>
-        private static long _timeStamp = 0L;
+        private static long _timeStamp;
 
         /// <summary>
         /// 配置外链关键词，例如：AppSettings.Url
         /// </summary>
-        private static string _configUrlSection { get { return _configSection + "." + _configUrlPostfix; } }
+        private static string ConfigUrlSection => _configSection + "." + _configUrlPostfix;
 
 
         static ConfigurationManager()
@@ -58,24 +58,24 @@ namespace HZC.Infrastructure
         /// <summary>
         /// 确定配置文件路径
         /// </summary>
-        private static void ConfigFinder(string Path)
+        private static void ConfigFinder(string path)
         {
-            _configPath = Path;
-            JObject config_json = new JObject();
-            while (config_json != null)
+            _configPath = path;
+            JObject configJson;
+            while (true)
             {
-                config_json = null;
-                FileInfo config_info = new FileInfo(_configPath);
-                if (!config_info.Exists) break;
+                configJson = null;
+                var configInfo = new FileInfo(_configPath);
+                if (!configInfo.Exists) break;
 
-                FileListeners.Push(CreateListener(config_info));
-                config_json = LoadJsonFile(_configPath);
-                if (config_json[_configUrlSection] != null)
-                    _configPath = config_json[_configUrlSection].ToString();
+                FileListeners.Push(CreateListener(configInfo));
+                configJson = LoadJsonFile(_configPath);
+                if (configJson[ConfigUrlSection] != null)
+                    _configPath = configJson[ConfigUrlSection].ToString();
                 else break;
             }
 
-            if (config_json == null || config_json[_configSection] == null) return;
+            if (configJson?[_configSection] == null) return;
 
             LoadConfiguration();
         }
@@ -85,15 +85,15 @@ namespace HZC.Infrastructure
         /// </summary>
         private static void LoadConfiguration()
         {
-            FileInfo config = new FileInfo(_configPath);
-            var configColltion = new NameValueCollection();
-            JObject config_object = LoadJsonFile(_configPath);
-            if (config_object == null || !(config_object is JObject)) return;
+            var configObject = LoadJsonFile(_configPath);
+            if (configObject == null) return;
 
-            if (config_object[_configSection] != null)
+            var configColltion = new NameValueCollection();
+            if (configObject[_configSection] != null)
             {
-                foreach (JProperty prop in config_object[_configSection])
+                foreach (var jToken in configObject[_configSection])
                 {
+                    var prop = (JProperty) jToken;
                     configColltion[prop.Name] = prop.Value.ToString();
                 }
             }
@@ -104,19 +104,23 @@ namespace HZC.Infrastructure
         /// <summary>
         /// 解析Json文件
         /// </summary>
-        /// <param name="FilePath">文件路径</param>
+        /// <param name="filePath">文件路径</param>
         /// <returns></returns>
-        private static JObject LoadJsonFile(string FilePath)
+        private static JObject LoadJsonFile(string filePath)
         {
-            JObject config_object = null;
+            JObject configObject = null;
             try
             {
-                StreamReader sr = new StreamReader(FilePath, Encoding.Default);
-                config_object = JObject.Parse(sr.ReadToEnd());
+                var sr = new StreamReader(filePath, Encoding.Default);
+                configObject = JObject.Parse(sr.ReadToEnd());
                 sr.Close();
             }
-            catch { }
-            return config_object;
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return configObject;
         }
 
         /// <summary>
@@ -127,14 +131,14 @@ namespace HZC.Infrastructure
         private static KeyValuePair<string, FileSystemWatcher> CreateListener(FileInfo info)
         {
 
-            FileSystemWatcher watcher = new FileSystemWatcher();
+            var watcher = new FileSystemWatcher();
             watcher.BeginInit();
             watcher.Path = info.DirectoryName;
             watcher.Filter = info.Name;
             watcher.IncludeSubdirectories = false;
             watcher.EnableRaisingEvents = true;
             watcher.NotifyFilter = NotifyFilters.Attributes | NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.Size;
-            watcher.Changed += new FileSystemEventHandler(ConfigChangeListener);
+            watcher.Changed += ConfigChangeListener;
             watcher.EndInit();
 
             return new KeyValuePair<string, FileSystemWatcher>(info.FullName, watcher);
@@ -143,7 +147,7 @@ namespace HZC.Infrastructure
 
         private static void ConfigChangeListener(object sender, FileSystemEventArgs e)
         {
-            long time = TimeStamp();
+            var time = TimeStamp();
             lock (FileListeners)
             {
                 if (time > _timeStamp)
@@ -172,32 +176,29 @@ namespace HZC.Infrastructure
             return (long)((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds * 100);
         }
 
-        private static string c_configSection = null;
+        private static string _cConfigSection;
         public static string ConfigSection
         {
-            get { return _configSection; }
-            set { c_configSection = value; }
+            get => _configSection;
+            set => _cConfigSection = value;
         }
 
 
-        private static string c_configUrlPostfix = null;
+        private static string _cConfigUrlPostfix;
         public static string ConfigUrlPostfix
         {
-            get { return _configUrlPostfix; }
-            set { c_configUrlPostfix = value; }
+            get => _configUrlPostfix;
+            set => _cConfigUrlPostfix = value;
         }
 
-        private static string c_defaultPath = null;
+        private static string _cDefaultPath;
         public static string DefaultPath
         {
-            get { return _defaultPath; }
-            set { c_defaultPath = value; }
+            get => _defaultPath;
+            set => _cDefaultPath = value;
         }
 
-        public static NameValueCollection AppSettings
-        {
-            get { return _configurationCollection; }
-        }
+        public static NameValueCollection AppSettings => _configurationCollection;
 
         /// <summary>
         /// 手动刷新配置，修改配置后，请手动调用此方法，以便更新配置参数
@@ -207,9 +208,9 @@ namespace HZC.Infrastructure
             lock (FileListeners)
             {
                 //修改配置
-                if (c_configSection != null) { _configSection = c_configSection; c_configSection = null; }
-                if (c_configUrlPostfix != null) { _configUrlPostfix = c_configUrlPostfix; c_configUrlPostfix = null; }
-                if (c_defaultPath != null) { _defaultPath = c_defaultPath; c_defaultPath = null; }
+                if (_cConfigSection != null) { _configSection = _cConfigSection; _cConfigSection = null; }
+                if (_cConfigUrlPostfix != null) { _configUrlPostfix = _cConfigUrlPostfix; _cConfigUrlPostfix = null; }
+                if (_cDefaultPath != null) { _defaultPath = _cDefaultPath; _cDefaultPath = null; }
                 //释放掉全部监听响应链
                 while (FileListeners.Count > 0)
                     FileListeners.Pop().Value.Dispose();

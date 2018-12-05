@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Web;
-using HZC.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
+﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using QRCoder;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Web;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 using Zodo.Assets.Website.Models;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class AssetController : MvcController
     {
         private AssetService service = new AssetService();
@@ -33,7 +31,7 @@ namespace Zodo.Assets.Website.Controllers
         public JsonResult Get(AssetSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
             var list = service.PageListDto(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<AssetDto>(list));
+            return Json(ResultUtil.PageList(list));
         }
         #endregion
 
@@ -380,8 +378,8 @@ namespace Zodo.Assets.Website.Controllers
                 return new EmptyResult();
             }
             var code = new AssetQrDto();
-            code.id = entity.Id;
-            code.code = entity.Code;
+            code.Id = entity.Id;
+            code.Code = entity.Code;
 
             return View(entity);
         }
@@ -394,8 +392,8 @@ namespace Zodo.Assets.Website.Controllers
                 return new EmptyResult();
             }
             var code = new AssetQrDto();
-            code.id = entity.Id;
-            code.code = entity.Code;
+            code.Id = entity.Id;
+            code.Code = entity.Code;
 
             return View(entity);
         }
@@ -405,8 +403,8 @@ namespace Zodo.Assets.Website.Controllers
         private void SaveQrImage(Asset asset)
         {
             var assetQrDto = new AssetQrDto();
-            assetQrDto.id = asset.Id;
-            assetQrDto.code = asset.Code;
+            assetQrDto.Id = asset.Id;
+            assetQrDto.Code = asset.Code;
 
             string content = JsonConvert.SerializeObject(assetQrDto);
             QRCodeGenerator generator = new QRCodeGenerator();

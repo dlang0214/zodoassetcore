@@ -14,8 +14,6 @@ using Senparc.Weixin;
 using Senparc.Weixin.Entities;
 using Senparc.Weixin.RegisterServices;
 using Senparc.Weixin.Work;
-using Senparc.Weixin.Work.Containers;
-using System;
 using System.IO;
 
 namespace Zodo.Assets.Website
@@ -37,10 +35,11 @@ namespace Zodo.Assets.Website
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddMemoryCache(); //使用本地缓存必须添加
-            services.AddDistributedRedisCache((options) =>
-            {
-                options.Configuration = "127.0.0.1:6379";
-            });
+
+            //services.AddDistributedRedisCache((options) =>
+            //{
+            //    options.Configuration = "127.0.0.1:6379";
+            //});
 
             services.AddSession();
 
@@ -51,8 +50,8 @@ namespace Zodo.Assets.Website
                     opts.AccessDeniedPath = "/Error/Deny";
                     opts.LoginPath = "/Login";
                     opts.Cookie.Name = "aspnetcore_zodoassets";
-                    opts.ExpireTimeSpan = TimeSpan.FromDays(2);
-                    opts.SlidingExpiration = true;
+                    //opts.ExpireTimeSpan = TimeSpan.FromDays(2);
+                    opts.SlidingExpiration = false;
                 });
 
             services.AddSenparcGlobalServices(Configuration)//Senparc.CO2NET 全局注册
@@ -87,11 +86,11 @@ namespace Zodo.Assets.Website
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            IRegisterService register = RegisterService
+            var register = RegisterService
                 .Start(env, senparcSetting.Value)
-                .UseSenparcGlobal(false); // 启动 CO2NET 全局注册，必须！
+                .UseSenparcGlobal(); // 启动 CO2NET 全局注册，必须！
 
-            register.UseSenparcWeixin(senparcWeixinSetting.Value, null)
+            register.UseSenparcWeixin(senparcWeixinSetting.Value)
                 .RegisterWorkAccount(senparcWeixinSetting.Value); //微信全局注册，必须！
         }
     }

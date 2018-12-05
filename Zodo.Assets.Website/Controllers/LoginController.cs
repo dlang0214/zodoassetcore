@@ -65,8 +65,9 @@ namespace Zodo.Assets.Website.Controllers
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties
                 {
-                    IsPersistent = true,
-                    ExpiresUtc = DateTime.Today.AddDays(7),
+                    IsPersistent = false,
+                    //ExpiresUtc = DateTime.Today.AddDays(7),
+                    //ExpiresUtc = DateTime.Now.AddMinutes(1),
                     RedirectUri = "/Login"
                 });
                 

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Zodo.Assets.Website
 {
@@ -17,17 +16,14 @@ namespace Zodo.Assets.Website
         /// <returns></returns>
         public static List<SelectListItem> ToSelectList(this string[] data, string value = null, string firstOption = null)
         {
-            List<SelectListItem> result = new List<SelectListItem>();
+            var result = new List<SelectListItem>();
 
             if (!string.IsNullOrWhiteSpace(firstOption))
             {
                 result.Add(new SelectListItem { Text = firstOption, Value = string.Empty });
             }
 
-            foreach (var d in data)
-            {
-                result.Add(new SelectListItem { Text = d, Value = d, Selected = d == value });
-            }
+            result.AddRange(data.Select(d => new SelectListItem {Text = d, Value = d, Selected = d == value}));
 
             return result;
         }
@@ -42,7 +38,7 @@ namespace Zodo.Assets.Website
         /// <returns></returns>
         public static List<SelectListItem> ToSelectList<T>(this List<T> data, string valueProp, string textProp)
         {
-            List<SelectListItem> items = new List<SelectListItem>();
+            var items = new List<SelectListItem>();
 
             if (data == null || data.Count == 0)
             {
@@ -50,8 +46,8 @@ namespace Zodo.Assets.Website
             }
 
             var props = typeof(T).GetProperties();
-            var vProp = props.Where(p => p.Name == valueProp).SingleOrDefault();
-            var tProp = props.Where(p => p.Name == textProp).SingleOrDefault();
+            var vProp = props.SingleOrDefault(p => p.Name == valueProp);
+            var tProp = props.SingleOrDefault(p => p.Name == textProp);
 
             if (vProp == null || tProp == null)
             {
@@ -75,6 +71,7 @@ namespace Zodo.Assets.Website
         /// <param name="data">数据源</param>
         /// <param name="valueProp">value字段（属性）名称</param>
         /// <param name="textProp">text字段（属性）名称</param>
+        /// <param name="selectedValue">选中值</param>
         /// <returns></returns>
         public static List<SelectListItem> ToSelectList<T>(this List<T> data, string valueProp, string textProp, string selectedValue)
         {
@@ -84,27 +81,22 @@ namespace Zodo.Assets.Website
             }
 
             var props = typeof(T).GetProperties();
-            var vProp = props.Where(p => p.Name == valueProp).SingleOrDefault();
-            var tProp = props.Where(p => p.Name == textProp).SingleOrDefault();
+            var vProp = props.SingleOrDefault(p => p.Name == valueProp);
+            var tProp = props.SingleOrDefault(p => p.Name == textProp);
 
             if (vProp == null || tProp == null)
             {
                 throw new ArgumentException("指定的字段名不存在");
             }
 
-            List<SelectListItem> items = new List<SelectListItem>();
+            var items = new List<SelectListItem>();
             foreach (var t in data)
             {
                 var text = tProp.GetValue(t).ToString();
                 var value = vProp.GetValue(t).ToString();
-                if (selectedValue == value)
-                {
-                    items.Add(new SelectListItem { Value = value, Text = text, Selected = true });
-                }
-                else
-                {
-                    items.Add(new SelectListItem { Value = value, Text = text });
-                }
+                items.Add(selectedValue == value
+                    ? new SelectListItem {Value = value, Text = text, Selected = true}
+                    : new SelectListItem {Value = value, Text = text});
             }
             return items;
         }

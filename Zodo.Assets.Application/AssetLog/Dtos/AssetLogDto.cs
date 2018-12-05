@@ -2,9 +2,10 @@
 using Newtonsoft.Json;
 using System;
 
+// ReSharper disable CheckNamespace
 namespace Zodo.Assets.Application
 {
-    public partial class AssetLogDto
+    public class AssetLogDto
     {
         public int Id { get; set; }
 
@@ -38,6 +39,5 @@ namespace Zodo.Assets.Application
         public string Pics { get; set; }
 
         public string Remark { get; set; }
-
     }
 }

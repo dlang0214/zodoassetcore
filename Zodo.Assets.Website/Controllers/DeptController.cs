@@ -1,5 +1,4 @@
 ﻿using HZC.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,10 +11,9 @@ using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class DeptController : MvcController
     {
-        private DeptService service = new DeptService();
+        private readonly DeptService _service = new DeptService();
 
         #region 首页
         // GET: Dept
@@ -27,7 +25,7 @@ namespace Zodo.Assets.Website.Controllers
         public ActionResult Get()
         {
             var depts = DeptUtil.All();
-            return Json(ResultUtil.Success<List<DeptDto>>(depts));
+            return Json(ResultUtil.Success(depts));
         }
         #endregion
 
@@ -37,32 +35,24 @@ namespace Zodo.Assets.Website.Controllers
             Dept entity;
             if (!id.HasValue)
             {
-                entity = new Dept();
-                entity.Sort = 99;
+                entity = new Dept {Sort = 99};
 
                 if (p.HasValue)
                 {
                     entity.ParentId = (int)p;
-                    var children = DeptUtil.All().Where(d => d.ParentId == p);
-                    if (children.Count() == 0)
-                    {
-                        entity.Sort = 1;
-                    }
-                    else
-                    {
-                        entity.Sort = children.Max(c => c.Sort) + 1;
-                    }
+                    var children = DeptUtil.All().Where(d => d.ParentId == p).ToList();
+                    entity.Sort = !children.Any() ? 1 : children.Max(c => c.Sort) + 1;
                 }
             }
             else
             {
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
                 }
             }
-            InitUI();
+            InitUi();
             return View(entity);
         }
 
@@ -74,7 +64,7 @@ namespace Zodo.Assets.Website.Controllers
             {
                 Dept entity = new Dept();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
 
                 return Json(result);
             }
@@ -92,7 +82,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var result = service.Delete(id, AppUser);
+                var result = _service.Delete(id, AppUser);
                 return Json(result);
             }
             catch (Exception ex)
@@ -113,33 +103,30 @@ namespace Zodo.Assets.Website.Controllers
 
             ViewBag.DeptName = dept.Name;
 
-            var param = new AssetSearchParam();
-            param.DeptId = id;
-            param.isContainSubDept = true;
+            var param = new AssetSearchParam {DeptId = id, IsContainSubDept = true};
 
-            var assetService = new AssetService();
-            var assets = assetService.ListDto(param);
+            var assets = new AssetService().ListDto(param);
             return View(assets);
         }
         #endregion
 
         #region 私有方法
-        private void InitUI()
+        private void InitUi()
         {
-            var depts = DeptUtil.All();
-            List<SelectListItem> listItems = new List<SelectListItem>();
-            foreach (var d in depts)
+            var dept = DeptUtil.All();
+            var listItems = new List<SelectListItem>();
+            foreach (var d in dept)
             {
-                listItems.Add(new SelectListItem { Text = showName(d.Name, d.Level), Value = d.Id.ToString() });
+                listItems.Add(new SelectListItem { Text = ShowName(d.Name, d.Level), Value = d.Id.ToString() });
             }
             ViewBag.Parents = listItems;
 
-            string showName(string txt, int level)
+            string ShowName(string txt, int level)
             {
-                string str = "";
+                var str = "";
                 if (level > 1)
                 {
-                    for (int i = 0; i < level; i++)
+                    for (var i = 0; i < level; i++)
                     {
                         str += HttpUtility.HtmlDecode("&nbsp;&nbsp;");
                     }

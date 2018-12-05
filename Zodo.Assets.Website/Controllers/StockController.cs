@@ -1,12 +1,10 @@
 ﻿using HZC.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class StockController : MvcController
     {
         private StockService service = new StockService();

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Data;
+﻿using HZC.Infrastructure;
 using System.Collections.Generic;
-using HZC.Infrastructure;
-using HZC.SearchUtil;
-using Zodo.Assets.Core;
 using System.Linq;
-using HZC.Database;
+using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
 {
-    public partial class AssetLogService : BaseService<AssetLog>
+    public class AssetLogService : BaseService<AssetLog>
     {
 
         public PageList<AssetLogDto> PageListDto(AssetLogSearchParam param = null, int pageIndex = 1, int pageSize = 20, string cols = "*")
@@ -18,8 +14,8 @@ namespace Zodo.Assets.Application
             {
                 param = new AssetLogSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Query<AssetLogDto>(util, pageIndex, pageSize, table: "Asset_AssetLog", cols: cols);
+            var util = param.ToSearchUtil();
+            return db.Query<AssetLogDto>(util, pageIndex, pageSize, "Asset_AssetLog", cols);
         }
 
         public IEnumerable<AssetLogDto> ListDto(AssetLogSearchParam param = null, string cols = "*")
@@ -28,8 +24,8 @@ namespace Zodo.Assets.Application
             {
                 param = new AssetLogSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Fetch<AssetLogDto>(util, table: "Asset_AssetLog", cols: cols);
+            var util = param.ToSearchUtil();
+            return db.Fetch<AssetLogDto>(util, "Asset_AssetLog", cols);
         }
 
         public override Result<int> Create(AssetLog t, IAppUser user)
@@ -37,17 +33,11 @@ namespace Zodo.Assets.Application
             var error = ValidCreate(t, user);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                return ResultUtil.Do(ResultCodes.验证失败, 0, error);
             }
 
-            string[] types = new string[] { "调配", "借出", "归还", "报废", "回收" };
-            if (!types.Contains(t.Type))
-            {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, "不受支持的操作类型");
-            }
-
-            KeyValuePairList sqls = new KeyValuePairList();
-            return null;
+            var types = new[] { "调配", "借出", "归还", "报废", "回收" };
+            return !types.Contains(t.Type) ? ResultUtil.Do(ResultCodes.验证失败, 0, "不受支持的操作类型") : null;
         }
 
         #region 实体验证
@@ -69,15 +59,10 @@ namespace Zodo.Assets.Application
             return string.Empty;
         }
 
-        public override string ValidUpdate(AssetLog entity, IAppUser user)
-        {
-            return string.Empty;
-        }
+        public override string ValidUpdate(AssetLog entity, IAppUser user) => string.Empty;
 
-        public override string ValidDelete(AssetLog entity, IAppUser user)
-        {
-            return string.Empty;
-        }
+        public override string ValidDelete(AssetLog entity, IAppUser user) => string.Empty;
+
         #endregion
     }
 }

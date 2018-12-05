@@ -23,42 +23,23 @@ namespace HZC.SearchUtil
         #endregion
 
         #region 字段
-        private int _idx = 0;
+        private int _idx;
         private string _conditionClauses = string.Empty;
-        private List<string> _cols = new List<string>();
-        private List<string> _orderby = new List<string>();
-        private DynamicParameters _params = new DynamicParameters();
+        private readonly List<string> _cols = new List<string>();
+        private readonly List<string> _orderby = new List<string>();
+        private readonly DynamicParameters _params = new DynamicParameters();
         #endregion
 
         #region 属性
         /// <summary>
         /// where 子句
         /// </summary>
-        public string ConditionClaus
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(_conditionClauses))
-                {
-                    return "1=1";
-                }
-                else
-                {
-                    return _conditionClauses;
-                }
-            }
-        }
+        public string ConditionClaus => string.IsNullOrWhiteSpace(_conditionClauses) ? "1=1" : _conditionClauses;
 
         /// <summary>
         /// 查询参数
         /// </summary>
-        public DynamicParameters Parameters
-        {
-            get
-            {
-                return _params;
-            }
-        }
+        public DynamicParameters Parameters => _params;
 
         /// <summary>
         /// 分页数据查询参数
@@ -75,75 +56,52 @@ namespace HZC.SearchUtil
         /// <summary>
         /// orderby 子句
         /// </summary>
-        public string OrderByClaus
-        {
-            get
-            {
-                if (_orderby.Count == 0)
-                {
-                    return string.Empty;
-                }
-                else
-                {
-                    return string.Join(",", _orderby);
-                }
-            }
-        }
+        public string OrderByClaus => _orderby.Count == 0 ? string.Empty : string.Join(",", _orderby);
 
         /// <summary>
         /// 要查询的列
         /// </summary>
-        public string Columns
-        {
-            get
-            {
-                if (_cols.Count == 0)
-                {
-                    return "*";
-                }
-                return string.Join(",", _cols);
-            }
-        }
+        public string Columns => _cols.Count == 0 ? "*" : string.Join(",", _cols);
+
         #endregion
 
         #region 直接指定字符串
         public MySearchUtil And(string conditionString)
         {
-            if (!string.IsNullOrWhiteSpace(conditionString))
+            if (string.IsNullOrWhiteSpace(conditionString)) return this;
+
+            if (!string.IsNullOrWhiteSpace(_conditionClauses))
             {
-                if (!string.IsNullOrWhiteSpace(_conditionClauses))
-                {
-                    _conditionClauses += " And ";
-                }
-                _conditionClauses += conditionString;
+                _conditionClauses += " And ";
             }
+            _conditionClauses += conditionString;
 
             return this;
         }
 
         public MySearchUtil Or(string conditionString)
         {
-            if (!string.IsNullOrWhiteSpace(conditionString))
+            if (string.IsNullOrWhiteSpace(conditionString)) return this;
+
+            if (!string.IsNullOrWhiteSpace(_conditionClauses))
             {
-                if (!string.IsNullOrWhiteSpace(_conditionClauses))
-                {
-                    _conditionClauses = "(" + _conditionClauses + ") Or ";
-                }
-                _conditionClauses += conditionString;
+                _conditionClauses = "(" + _conditionClauses + ") Or ";
             }
+            _conditionClauses += conditionString;
+
             return this;
         }
 
         public MySearchUtil AndOr(string conditionString)
         {
-            if (!string.IsNullOrWhiteSpace(conditionString))
+            if (string.IsNullOrWhiteSpace(conditionString)) return this;
+
+            if (!string.IsNullOrWhiteSpace(_conditionClauses))
             {
-                if (!string.IsNullOrWhiteSpace(_conditionClauses))
-                {
-                    _conditionClauses += " And ";
-                }
-                _conditionClauses += "(" + conditionString + ")";
+                _conditionClauses += " And ";
             }
+            _conditionClauses += "(" + conditionString + ")";
+
             return this;
         }
         #endregion
@@ -157,7 +115,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + "=" + _sqlParameterPrefix + paramName);
         }
@@ -170,7 +128,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndNotEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + "<>" + _sqlParameterPrefix + paramName);
         }
@@ -183,7 +141,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndGreaterThan(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + ">" + _sqlParameterPrefix + paramName);
         }
@@ -196,7 +154,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndGreaterThanEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + ">=" + _sqlParameterPrefix + paramName);
         }
@@ -209,7 +167,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndLessThan(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + "<" + _sqlParameterPrefix + paramName);
         }
@@ -222,7 +180,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndLessThanEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + "<=" + _sqlParameterPrefix + paramName);
         }
@@ -235,7 +193,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndContains(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, "%" + value + "%");
             return And(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
@@ -248,25 +206,23 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndContains(string[] columns, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, "%" + value + "%");
 
-            if(columns.Count() > 0)
+            if (!columns.Any()) return this;
+            if (!string.IsNullOrWhiteSpace(_conditionClauses))
             {
-                if (!string.IsNullOrWhiteSpace(_conditionClauses))
-                {
-                    _conditionClauses += " AND ";
-                }
-                _conditionClauses += "(";
-                List<string> claus = new List<string>();
-                foreach (var column in columns)
-                {
-                    claus.Add(column + " LIKE " + _sqlParameterPrefix +  paramName);
-                }
-                
-                _conditionClauses += string.Join(" Or ", claus) + ")";
+                _conditionClauses += " AND ";
             }
-            
+            _conditionClauses += "(";
+            var claus = new List<string>();
+            foreach (var column in columns)
+            {
+                claus.Add(column + " LIKE " + _sqlParameterPrefix +  paramName);
+            }
+                
+            _conditionClauses += string.Join(" Or ", claus) + ")";
+
             return this;
         }
 
@@ -278,7 +234,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndStartWith(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value + "%");
             return And(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
@@ -291,7 +247,7 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndEndWith(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, "%" + value);
             return And(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
@@ -304,12 +260,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, int[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -322,12 +278,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, float[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -340,12 +296,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, long[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -358,12 +314,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, decimal[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -376,12 +332,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, string[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -394,12 +350,12 @@ namespace HZC.SearchUtil
         /// <returns></returns>
         public MySearchUtil AndIn(string column, DateTime[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return And(column + " IN " + _sqlParameterPrefix + paramName);
         }
@@ -448,68 +404,68 @@ namespace HZC.SearchUtil
         #region Or
         public MySearchUtil OrEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + "=" + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrGreaterThan(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + ">" + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrGreaterThanEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + ">=" + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrLessThan(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + "<" + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrLessThanEqual(string column, object value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + "<=" + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrContains(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, "%" + value + "%");
             return Or(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrStartWith(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value + "%");
             return Or(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrEndWith(string column, string value)
         {
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, "%" + value);
             return Or(column + " LIKE " + _sqlParameterPrefix + paramName);
         }
 
         public MySearchUtil OrIn(string column, object[] value)
         {
-            if (value.Count() == 0)
+            if (!value.Any())
             {
                 return this;
             }
 
-            var paramName = "p" + _idx++.ToString();
+            var paramName = "p" + _idx++;
             _params.Add(paramName, value);
             return Or(column + " IN " + _sqlParameterPrefix + paramName);
         }

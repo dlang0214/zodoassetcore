@@ -10,7 +10,7 @@ namespace Zodo.Assets.Application
 {
     public class AccountService
     {
-        private MyDbUtil db = new MyDbUtil();
+        private readonly MyDbUtil _db = new MyDbUtil();
 
         /// <summary>
         /// 创建
@@ -29,15 +29,8 @@ namespace Zodo.Assets.Application
                 }
 
                 entity.BeforeCreate(user);
-                var id = db.Create<Account>(entity);
-                if (id > 0)
-                {
-                    return ResultUtil.Success<int>(id);
-                }
-                else
-                {
-                    return ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0, "数据写入失败");
-                }
+                var id = _db.Create<Account>(entity);
+                return id > 0 ? ResultUtil.Success<int>(id) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0, "数据写入失败");
             }
             catch (Exception ex)
             {
@@ -58,24 +51,19 @@ namespace Zodo.Assets.Application
                 var error = Validate(entity);
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                    return ResultUtil.Do(ResultCodes.验证失败, 0, error);
                 }
 
                 entity.BeforeUpdate(user);
-                var row = db.Update<Account>(entity);
-                if (row > 0)
-                {
-                    db.Execute(@"UPDATE [Asset_Asset] SET DeptId=@DeptId WHERE AccountId=@AccountId", new { AccountId = entity.Id, DeptId = entity.DeptId });
-                    return ResultUtil.Success<int>(entity.Id);
-                }
-                else
-                {
-                    return ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0, "数据写入失败");
-                }
+                var row = _db.Update(entity);
+                if (row <= 0) return ResultUtil.Do(ResultCodes.数据库操作失败, 0, "数据写入失败");
+                _db.Execute(@"UPDATE [Asset_Asset] SET DeptId=@DeptId WHERE AccountId=@AccountId",
+                    new {AccountId = entity.Id, DeptId = entity.DeptId});
+                return ResultUtil.Success(entity.Id);
             }
             catch (Exception ex)
             {
-                return ResultUtil.Exception<int>(ex, 0);
+                return ResultUtil.Exception(ex, 0);
             }
         }
 
@@ -87,14 +75,7 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result<int> Save(Account entity, IAppUser user)
         {
-            if (entity.Id <= 0)
-            {
-                return Create(entity, user);
-            }
-            else
-            {
-                return Update(entity, user);
-            }
+            return entity.Id <= 0 ? Create(entity, user) : Update(entity, user);
         }
 
         /// <summary>
@@ -107,13 +88,13 @@ namespace Zodo.Assets.Application
         {
             try
             {
-                var entity = db.Load<Account>(id);
+                var entity = _db.Load<Account>(id);
                 if (entity == null)
                 {
                     return ResultUtil.Do(ResultCodes.数据不存在, "请求的数据不存在");
                 }
 
-                var assetCount = db.GetCount<Asset>(MySearchUtil.New()
+                var assetCount = _db.GetCount<Asset>(MySearchUtil.New()
                     .AndEqual("AccountId", id)
                     .AndEqual("IsDel", false));
                 if (assetCount > 0)
@@ -121,15 +102,8 @@ namespace Zodo.Assets.Application
                     return ResultUtil.Do(ResultCodes.验证失败, "此用户下资产不为空，禁止删除");
                 }
 
-                var row = db.Remove<Account>(id);
-                if (row > 0)
-                {
-                    return ResultUtil.Success();
-                }
-                else
-                {
-                    return ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");
-                }
+                var row = _db.Remove<Account>(id);
+                return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");
             }
             catch (Exception ex)
             {
@@ -146,9 +120,8 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public PageList<AccountListDto> PageList(AccountSearchParam input, int pageIndex, int pageSize)
         {
-            MySearchUtil util = input.ToSearchUtil();
-
-            return db.Query<AccountListDto>(util, pageIndex, pageSize, "AccountView");
+            var util = input.ToSearchUtil();
+            return _db.Query<AccountListDto>(util, pageIndex, pageSize, "AccountView");
         }
 
         /// <summary>
@@ -158,15 +131,13 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Account Load(int id)
         {
-            var entity = db.Load<Account>(id);
+            var entity = _db.Load<Account>(id);
             if (entity == null || entity.IsDel)
             {
                 return null;
             }
-            else
-            {
-                return entity;
-            }
+
+            return entity;
         }
 
         /// <summary>
@@ -182,7 +153,7 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "请求的数据不存在");
             }
 
-            var assetCount = db.GetCount<Asset>(MySearchUtil.New()
+            var assetCount = _db.GetCount<Asset>(MySearchUtil.New()
                 .AndEqual("AccountId", id)
                 .AndEqual("IsDel", false)
                 .AndNotEqual("State", "报废"));
@@ -192,7 +163,7 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "此用户下资产不为空");
             }
 
-            var row = db.Remove<Account>(id);
+            var row = _db.Remove<Account>(id);
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败);
         }
 
@@ -203,8 +174,10 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public List<AccountBaseDto> GetAccountsBaseInfo(int? deptId, string key = "")
         {
-            AccountSearchParam param = new AccountSearchParam();
-            param.IsStrict = true;
+            var param = new AccountSearchParam
+            {
+                IsStrict = true
+            };
             if (deptId.HasValue)
             {
                 param.Dept = (int)deptId;
@@ -213,18 +186,13 @@ namespace Zodo.Assets.Application
             {
                 param.Key = key;
             }
-            return db.Fetch<AccountBaseDto>(param.ToSearchUtil(), "Base_Account", "Id,Name,DeptId").ToList();
+            return _db.Fetch<AccountBaseDto>(param.ToSearchUtil(), "Base_Account", "Id,Name,DeptId").ToList();
         }
 
         #region 私有方法
         private string Validate(Account entity)
         {
-            if (string.IsNullOrWhiteSpace(entity.Name))
-            {
-                return "员工姓名不能为空";
-            }
-
-            return string.Empty;
+            return string.IsNullOrWhiteSpace(entity.Name) ? "员工姓名不能为空" : string.Empty;
         }
         #endregion
     }

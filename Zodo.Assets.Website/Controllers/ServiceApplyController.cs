@@ -16,8 +16,8 @@ namespace Zodo.Assets.Website.Controllers
     [WeixinUserFiler]
     public class ServiceApplyController : WeixinWorkController
     {
-        private ServiceApplyService service = new ServiceApplyService();
-        ILog log = LogManager.GetLogger(typeof(ServiceApplyController));
+        private readonly ServiceApplyService _service = new ServiceApplyService();
+        readonly ILog _log = LogManager.GetLogger(typeof(ServiceApplyController));
 
         #region 手机端首页
         public IActionResult Index()
@@ -36,17 +36,16 @@ namespace Zodo.Assets.Website.Controllers
             {
                 param.UserId = WxUser.UserId;
             }
-            var list = service.PageList((int)id, 5, param);
+            var list = _service.PageList((int)id, 5, param);
 
-            return Json(ResultUtil.PageList<ServiceApply>(list));
+            return Json(ResultUtil.PageList(list));
         }
         #endregion
 
         #region 手机端发起申请
         public IActionResult Create()
         {
-            var entity = new ServiceApply();
-            entity.RequireCompleteAt = DateTime.Today.AddDays(1);
+            var entity = new ServiceApply {RequireCompleteAt = DateTime.Today.AddDays(1)};
             ViewBag.Types = DataItemUtil.GetValues("ServiceTypes").ToSelectList();
             return View("Create", entity);
         }
@@ -64,7 +63,7 @@ namespace Zodo.Assets.Website.Controllers
 
             try
             {
-                var result = service.Create(entity);
+                var result = _service.Create(entity);
                 if (result.Code == 200)
                 {
                     try
@@ -76,14 +75,12 @@ namespace Zodo.Assets.Website.Controllers
                     }
                     catch (Exception ex)
                     {
-                        log.Error(ex);
+                        _log.Error(ex);
                     }
                     return RedirectToAction("Index");
                 }
-                else
-                {
-                    ModelState.AddModelError(String.Empty, result.Message);
-                }
+
+                ModelState.AddModelError(string.Empty, result.Message);
             }
             catch(Exception ex)
             {
@@ -102,26 +99,19 @@ namespace Zodo.Assets.Website.Controllers
         /// <returns></returns>
         public ActionResult Details(int id)
         {            
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
 
             if (entity == null)
             {
                 return RedirectToAction("Error", new { title = "404", message = "您要查看的申请信息不存在" });
             }
 
-            string[] managers = DataItemUtil.GetValues("AssetManager");
-            string viewName = "Details";
+            var managers = DataItemUtil.GetValues("AssetManager");
+            var viewName = "Details";
             if (managers.Contains(WxUser.UserId))
             {
                 // 资产管理员
-                if (entity.State == "待处理")
-                {
-                    viewName = "Details2";
-                }
-                else
-                {
-                    viewName = "Details3";
-                }
+                viewName = entity.State == "待处理" ? "Details2" : "Details3";
             }
             else
             {
@@ -150,12 +140,12 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Recieve(int id)
         {
-            string[] managers = DataItemUtil.GetValues("AssetManager");
+            var managers = DataItemUtil.GetValues("AssetManager");
             if (!managers.Contains(WxUser.UserId))
             {
                 return Json(ResultUtil.Do(ResultCodes.无权限, "无权使用此功能"));
             }
-            var result = service.Receive(id, User.GetWeixinUserId(), User.GetWeixinUserName());
+            var result = _service.Receive(id, User.GetWeixinUserId(), User.GetWeixinUserName());
             return Json(result);
         }
 
@@ -163,12 +153,12 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Remark(int id, string reason, string analysis, string solution)
         {
-            string[] managers = DataItemUtil.GetValues("AssetManager");
+            var managers = DataItemUtil.GetValues("AssetManager");
             if (!managers.Contains(WxUser.UserId))
             {
                 return Json(ResultUtil.Do(ResultCodes.无权限, "无权使用此功能"));
             }
-            var result = service.Remark(id, reason, analysis, solution);
+            var result = _service.Remark(id, reason, analysis, solution);
             return Json(result);
         }
 
@@ -176,12 +166,12 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Reason(int id, string reason)
         {
-            string[] managers = DataItemUtil.GetValues("AssetManager");
+            var managers = DataItemUtil.GetValues("AssetManager");
             if (!managers.Contains(WxUser.UserId))
             {
                 return Json(ResultUtil.Do(ResultCodes.无权限, "无权使用此功能"));
             }
-            var result = service.SetReason(id, reason);
+            var result = _service.SetReason(id, reason);
             return Json(result);
         }
 
@@ -189,12 +179,12 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Solution(int id, string solution)
         {
-            string[] managers = DataItemUtil.GetValues("AssetManager");
+            var managers = DataItemUtil.GetValues("AssetManager");
             if (!managers.Contains(WxUser.UserId))
             {
                 return Json(ResultUtil.Do(ResultCodes.无权限, "无权使用此功能"));
             }
-            var result = service.SetSolution(id, solution);
+            var result = _service.SetSolution(id, solution);
             return Json(result);
         }
 
@@ -204,7 +194,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             Result result;
 
-            string[] managers = DataItemUtil.GetValues("AssetManager");
+            var managers = DataItemUtil.GetValues("AssetManager");
 
             if (!managers.Contains(WxUser.UserId))
             {
@@ -212,7 +202,7 @@ namespace Zodo.Assets.Website.Controllers
                 return Json(result);
             }
 
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 result = ResultUtil.Do(ResultCodes.数据不存在, "请求的数据不存在");
@@ -225,15 +215,13 @@ namespace Zodo.Assets.Website.Controllers
                 return Json(result);
             }
 
-            result = service.Complete(id, WxUser.UserId, WxUser.UserName);
+            result = _service.Complete(id, WxUser.UserId, WxUser.UserName);
             return Json(result);
         }
 
         public JsonResult Score(int id, string score, string reply)
         {
-            Result result;
-
-            result = service.Score(id, score, WxUser.UserId, reply);
+            var result = _service.Score(id, score, WxUser.UserId, reply);
             return Json(result);
         }
         #endregion
@@ -256,7 +244,9 @@ namespace Zodo.Assets.Website.Controllers
             {
                 return ResultUtil.Do<string>(ResultCodes.系统异常, token);
             }
-            var result = Senparc.Weixin.Work.AdvancedAPIs.MassApi.SendNews(token, WeixinWorkOptions.AgentId, new List<Senparc.NeuChar.Entities.Article>
+            var result = Senparc.Weixin.Work.AdvancedAPIs.MassApi.SendNews(token,
+                WeixinWorkOptions.AgentId,
+                new List<Senparc.NeuChar.Entities.Article>
             {
                 new Senparc.NeuChar.Entities.Article
                 {
@@ -264,15 +254,10 @@ namespace Zodo.Assets.Website.Controllers
                      Description = content,
                      Url = url
                 }
-            }, toUser: users);
-            if (result.errcode != Senparc.Weixin.ReturnCode_Work.请求成功)
-            {
-                return ResultUtil.Do<string>(ResultCodes.系统异常, result.errmsg);
-            }
-            else
-            {
-                return ResultUtil.Success();
-            }
+            }, users);
+            return result.errcode != Senparc.Weixin.ReturnCode_Work.请求成功
+                ? ResultUtil.Do<string>(ResultCodes.系统异常, result.errmsg)
+                : ResultUtil.Success();
         }
         #endregion
     }

@@ -1,40 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HZC.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
+﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
 using Zodo.Assets.Application;
 using Zodo.Assets.Website.Extensions;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class ConfigController : MvcController
     {
-        private DataItemService service = new DataItemService();
-        private readonly WeixinDeptUtil2 weixinDeptUtil;
-        private readonly WeixinUserUtil2 weixinUserUtil;
+        private readonly DataItemService _service = new DataItemService();
+        private readonly WeixinDeptUtil _weixinDeptUtil;
 
         public ConfigController(IDistributedCache cache)
         {
-            weixinDeptUtil = new WeixinDeptUtil2(cache);
-            weixinUserUtil = new WeixinUserUtil2(cache);
+            _weixinDeptUtil = new WeixinDeptUtil(cache);
         }
 
         #region 资产管理员帐号配置
         public IActionResult AssetManager()
         {
-            var entity = service.Load("AssetManager");
+            var entity = _service.Load("AssetManager");
             if (entity == null)
             {
-                entity = new Core.DataItem();
-                entity.K = "AssetManager";
-                entity.V = "";
-
-                service.Create(entity, AppUser);
+                entity = new Core.DataItem
+                {
+                    K = "AssetManager",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
             }
             return View(entity);
         }
@@ -43,7 +37,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult AssetManager(string v)
         {
-            var result = service.Update("AssetManager", v, AppUser);
+            var result = _service.Update("AssetManager", v, AppUser);
             return Json(result);
         }
         #endregion
@@ -51,14 +45,15 @@ namespace Zodo.Assets.Website.Controllers
         #region 服务类型
         public ActionResult ServiceType()
         {
-            var entity = service.Load("ServiceTypes");
+            var entity = _service.Load("ServiceTypes");
             if (entity == null)
             {
-                entity = new Core.DataItem();
-                entity.K = "ServiceTypes";
-                entity.V = "";
-
-                service.Create(entity, AppUser);
+                entity = new Core.DataItem
+                {
+                    K = "ServiceTypes",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
             }
             return View(entity);
         }
@@ -67,7 +62,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult ServiceType(string v)
         {
-            var result = service.Update("ServiceTypes", v, AppUser);
+            var result = _service.Update("ServiceTypes", v, AppUser);
             return Json(result);
         }
         #endregion
@@ -75,14 +70,15 @@ namespace Zodo.Assets.Website.Controllers
         #region 服务申请状态
         public ActionResult ServiceState()
         {
-            var entity = service.Load("ServiceStates");
+            var entity = _service.Load("ServiceStates");
             if (entity == null)
             {
-                entity = new Core.DataItem();
-                entity.K = "ServiceStates";
-                entity.V = "";
-
-                service.Create(entity, AppUser);
+                entity = new Core.DataItem
+                {
+                    K = "ServiceStates",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
             }
             return View(entity);
         }
@@ -91,7 +87,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult ServiceState(string v)
         {
-            var result = service.Update("ServiceStates", v, AppUser);
+            var result = _service.Update("ServiceStates", v, AppUser);
             return Json(result);
         }
         #endregion
@@ -99,14 +95,15 @@ namespace Zodo.Assets.Website.Controllers
         #region 服务满意度
         public ActionResult ServiceScore()
         {
-            var entity = service.Load("ServiceScores");
+            var entity = _service.Load("ServiceScores");
             if (entity == null)
             {
-                entity = new Core.DataItem();
-                entity.K = "ServiceScores";
-                entity.V = "";
-
-                service.Create(entity, AppUser);
+                entity = new Core.DataItem
+                {
+                    K = "ServiceScores",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
             }
             return View(entity);
         }
@@ -115,17 +112,12 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult ServiceScore(string v)
         {
-            var result = service.Update("ServiceScores", v, AppUser);
+            var result = _service.Update("ServiceScores", v, AppUser);
             return Json(result);
         } 
         #endregion
 
         #region 微信通讯录缓存
-        public ActionResult WexinCache()
-        {
-            return View();
-        }
-
         public ActionResult WeixinUser()
         {
             return View();
@@ -133,7 +125,7 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult GetWeixinUsers()
         {
-            var list = weixinUserUtil.All();
+            var list = WeixinUserUtil.All();
             return Json(ResultUtil.Success(list));
         }
 
@@ -144,7 +136,7 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult GetWeixinDepts()
         {
-            var list = weixinDeptUtil.All();
+            var list = _weixinDeptUtil.All();
             return Json(ResultUtil.Success(list));
         }
 
@@ -154,7 +146,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                weixinDeptUtil.Reset();
+                _weixinDeptUtil.Reset();
                 return Json(ResultUtil.Success());
             }
             catch (Exception ex)
@@ -170,7 +162,7 @@ namespace Zodo.Assets.Website.Controllers
             try
             {
                 //WeixinUserUtil.Reset();
-                weixinUserUtil.Reset();
+                WeixinUserUtil.Reset();
                 return Json(ResultUtil.Success());
             }
             catch (Exception ex)

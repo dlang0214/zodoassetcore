@@ -8,9 +8,6 @@ namespace HZC.Database
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class MyDataTableAttribute : Attribute
     {
-        public MyDataTableAttribute() : this(string.Empty)
-        { }
-        
         public MyDataTableAttribute(string name)
         {
             Name = name;

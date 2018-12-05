@@ -12,8 +12,8 @@ namespace HZC.Database
 {
     public class MyDbUtil
     {
-        private string _connectionString;
-        private string _paramPrefix;
+        private readonly string _connectionString;
+        private readonly string _paramPrefix;
 
         #region 构造方法
         public MyDbUtil(string connStr, DbTypes dbType = DbTypes.SqlServer)
@@ -39,7 +39,7 @@ namespace HZC.Database
         #region 获取查询的sql语句
         public string GetQuerySql(string cols, string table, string where, string orderby, int? top = null)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("SELECT ");
             if (top.HasValue)
             {
@@ -64,7 +64,7 @@ namespace HZC.Database
         {
             if (index == 1)
             {
-                string sql = string.Format(
+                var sql = string.Format(
                     @"SELECT TOP {4} {0} FROM {1} WHERE {2} ORDER BY {3};SELECT " + _paramPrefix + "RecordCount=COUNT(0) FROM {1} WHERE {2}",
                     cols,
                     tables,
@@ -77,7 +77,7 @@ namespace HZC.Database
             }
             else
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 sb.Append("FROM ").Append(tables);
 
                 if (!string.IsNullOrWhiteSpace(condition))
@@ -90,7 +90,7 @@ namespace HZC.Database
                     throw new Exception("分页列表必须指定orderby字段");
                 }
 
-                string sql = string.Format(
+                var sql = string.Format(
                     @"  WITH PAGEDDATA AS
 					    (
 						    SELECT TOP 100 PERCENT {0}, ROW_NUMBER() OVER (ORDER BY {1}) AS FLUENTDATA_ROWNUMBER
@@ -130,11 +130,11 @@ namespace HZC.Database
                 table = GetTableName(typeof(T));
             }
 
-            string where = util.ConditionClaus;
-            string orderby = util.OrderByClaus;
-            DynamicParameters param = util.Parameters;
+            var where = util.ConditionClaus;
+            var orderby = util.OrderByClaus;
+            var param = util.Parameters;
 
-            string sql = GetQuerySql(cols, table, where, orderby);
+            var sql = GetQuerySql(cols, table, where, orderby);
             using (var conn = GetConnection())
             {
                 return conn.Query<T>(sql, param);
@@ -151,11 +151,11 @@ namespace HZC.Database
 
         public IEnumerable<dynamic> Fetch(MySearchUtil util, string table, string cols = "*", int? top = null)
         {
-            string where = util.ConditionClaus;
-            string orderby = util.OrderByClaus;
-            DynamicParameters param = util.Parameters;
+            var where = util.ConditionClaus;
+            var orderby = util.OrderByClaus;
+            var param = util.Parameters;
 
-            string sql = GetQuerySql(cols, table, where, orderby);
+            var sql = GetQuerySql(cols, table, where, orderby);
             using (var conn = GetConnection())
             {
                 return conn.Query(sql, param);
@@ -171,11 +171,11 @@ namespace HZC.Database
                 table = GetTableName(typeof(T));
             }
 
-            string where = util.ConditionClaus;
-            string orderby = util.OrderByClaus;
-            DynamicParameters param = util.PageListParameters;
+            var where = util.ConditionClaus;
+            var orderby = util.OrderByClaus;
+            var param = util.PageListParameters;
 
-            string sql = GetPagingQuerySql(cols, table, where, orderby, pageIndex, pageSize);
+            var sql = GetPagingQuerySql(cols, table, where, orderby, pageIndex, pageSize);
             using (var conn = GetConnection())
             {
                 var list = conn.Query<T>(sql, param);
@@ -192,11 +192,11 @@ namespace HZC.Database
 
         public PageList<dynamic> Query(MySearchUtil util, int pageIndex, int pageSize, string table, string cols = "*")
         {
-            string where = util.ConditionClaus;
-            string orderby = util.OrderByClaus;
-            DynamicParameters param = util.PageListParameters;
+            var where = util.ConditionClaus;
+            var orderby = util.OrderByClaus;
+            var param = util.PageListParameters;
 
-            string sql = GetPagingQuerySql(cols, table, where, orderby, pageIndex, pageSize);
+            var sql = GetPagingQuerySql(cols, table, where, orderby, pageIndex, pageSize);
             using (var conn = GetConnection())
             {
                 var list = conn.Query(sql, param);
@@ -253,8 +253,8 @@ namespace HZC.Database
         {
             using (var conn = GetConnection())
             {
-                string sql = "SELECT " + cols + " FROM [" + GetTableName(typeof(T)) + "] WHERE Id=" + _paramPrefix + "id";
-                return conn.Query<T>(sql, new { id = id }).SingleOrDefault();
+                var sql = "SELECT " + cols + " FROM [" + GetTableName(typeof(T)) + "] WHERE Id=" + _paramPrefix + "id";
+                return conn.Query<T>(sql, new { id }).SingleOrDefault();
             }
         }
 
@@ -269,7 +269,7 @@ namespace HZC.Database
         {
             using (var conn = GetConnection())
             {
-                string sql = "SELECT TOP 1 " + cols + " FROM [" + GetTableName(typeof(T)) + "] WHERE " +
+                var sql = "SELECT TOP 1 " + cols + " FROM [" + GetTableName(typeof(T)) + "] WHERE " +
                     util.ConditionClaus + (string.IsNullOrWhiteSpace(util.OrderByClaus) ? "" : " ORDER BY " + util.OrderByClaus);
                 return conn.Query<T>(sql, util.Parameters).SingleOrDefault();
             }
@@ -279,17 +279,17 @@ namespace HZC.Database
         /// 加载实体及其导航属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P1"></typeparam>
+        /// <typeparam name="TP1"></typeparam>
         /// <param name="sql"></param>
         /// <param name="func"></param>
         /// <param name="splitOn"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public T LoadJoin<T, P1>(string sql, Func<T, P1, T> func, string splitOn, object param = null)
+        public T LoadJoin<T, TP1>(string sql, Func<T, TP1, T> func, string splitOn, object param = null)
         {
             using (var conn = GetConnection())
             {
-                return conn.Query<T, P1, T>(sql, func, param, splitOn: splitOn).SingleOrDefault();
+                return conn.Query(sql, func, param, splitOn: splitOn).SingleOrDefault();
             }
         }
 
@@ -297,18 +297,18 @@ namespace HZC.Database
         /// 加载实体及其导航属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P1"></typeparam>
-        /// <typeparam name="P2"></typeparam>
+        /// <typeparam name="TP1"></typeparam>
+        /// <typeparam name="TP2"></typeparam>
         /// <param name="sql"></param>
         /// <param name="func"></param>
         /// <param name="splitOn"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public T LoadJoin<T, P1, P2>(string sql, Func<T, P1, P2, T> func, string splitOn, object param = null)
+        public T LoadJoin<T, TP1, TP2>(string sql, Func<T, TP1, TP2, T> func, string splitOn, object param = null)
         {
             using (var conn = GetConnection())
             {
-                return conn.Query<T, P1, P2, T>(sql, func, param, splitOn: splitOn).SingleOrDefault();
+                return conn.Query(sql, func, param, splitOn: splitOn).SingleOrDefault();
             }
         }
 
@@ -316,19 +316,19 @@ namespace HZC.Database
         /// 加载实体及其导航属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P1"></typeparam>
-        /// <typeparam name="P2"></typeparam>
-        /// <typeparam name="P3"></typeparam>
+        /// <typeparam name="TP1"></typeparam>
+        /// <typeparam name="TP2"></typeparam>
+        /// <typeparam name="TP3"></typeparam>
         /// <param name="sql"></param>
         /// <param name="func"></param>
         /// <param name="splitOn"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public T LoadJoin<T, P1, P2, P3>(string sql, Func<T, P1, P2, P3, T> func, string splitOn, object param = null)
+        public T LoadJoin<T, TP1, TP2, TP3>(string sql, Func<T, TP1, TP2, TP3, T> func, string splitOn, object param = null)
         {
             using (var conn = GetConnection())
             {
-                return conn.Query<T, P1, P2, P3, T>(sql, func, param, splitOn: splitOn).SingleOrDefault();
+                return conn.Query(sql, func, param, splitOn: splitOn).SingleOrDefault();
             }
         }
 
@@ -336,20 +336,20 @@ namespace HZC.Database
         /// 加载实体及其导航属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P1"></typeparam>
-        /// <typeparam name="P2"></typeparam>
-        /// <typeparam name="P3"></typeparam>
-        /// <typeparam name="P4"></typeparam>
+        /// <typeparam name="TP1"></typeparam>
+        /// <typeparam name="TP2"></typeparam>
+        /// <typeparam name="TP3"></typeparam>
+        /// <typeparam name="TP4"></typeparam>
         /// <param name="sql"></param>
         /// <param name="func"></param>
         /// <param name="splitOn"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public T LoadJoin<T, P1, P2, P3, P4>(string sql, Func<T, P1, P2, P3, P4, T> func, string splitOn, object param = null)
+        public T LoadJoin<T, TP1, TP2, TP3, TP4>(string sql, Func<T, TP1, TP2, TP3, TP4, T> func, string splitOn, object param = null)
         {
             using (var conn = GetConnection())
             {
-                return conn.Query<T, P1, P2, P3, P4, T>(sql, func, param, splitOn: splitOn).SingleOrDefault();
+                return conn.Query(sql, func, param, splitOn: splitOn).SingleOrDefault();
             }
         }
 
@@ -357,21 +357,21 @@ namespace HZC.Database
         /// 加载实体及其导航属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="P1"></typeparam>
-        /// <typeparam name="P2"></typeparam>
-        /// <typeparam name="P3"></typeparam>
-        /// <typeparam name="P4"></typeparam>
-        /// <typeparam name="P5"></typeparam>
+        /// <typeparam name="TP1"></typeparam>
+        /// <typeparam name="TP2"></typeparam>
+        /// <typeparam name="TP3"></typeparam>
+        /// <typeparam name="TP4"></typeparam>
+        /// <typeparam name="TP5"></typeparam>
         /// <param name="sql"></param>
         /// <param name="func"></param>
         /// <param name="splitOn"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public T LoadJoin<T, P1, P2, P3, P4, P5>(string sql, Func<T, P1, P2, P3, P4, P5, T> func, string splitOn, object param = null)
+        public T LoadJoin<T, TP1, TP2, TP3, TP4, TP5>(string sql, Func<T, TP1, TP2, TP3, TP4, TP5, T> func, string splitOn, object param = null)
         {
             using (var conn = GetConnection())
             {
-                return conn.Query<T, P1, P2, P3, P4, P5, T>(sql, func, param, splitOn: splitOn).SingleOrDefault();
+                return conn.Query(sql, func, param, splitOn: splitOn).SingleOrDefault();
             }
         }
 
@@ -392,8 +392,8 @@ namespace HZC.Database
                 using (var multiReader = conn.QueryMultiple(sql, param))
                 {
                     var entity = multiReader.Read<T>().SingleOrDefault();
-                    var sub1s = multiReader.Read<T1>().ToList();
-                    func(entity, sub1s);
+                    var sub1S = multiReader.Read<T1>().ToList();
+                    func(entity, sub1S);
                     return entity;
                 }
             }
@@ -406,9 +406,9 @@ namespace HZC.Database
                 using (var multiReader = conn.QueryMultiple(sql, param))
                 {
                     var entity = multiReader.Read<T>().SingleOrDefault();
-                    var sub1s = multiReader.Read<T1>().ToList();
-                    var sub2s = multiReader.Read<T2>().ToList();
-                    func(entity, sub1s, sub2s);
+                    var sub1S = multiReader.Read<T1>().ToList();
+                    var sub2S = multiReader.Read<T2>().ToList();
+                    func(entity, sub1S, sub2S);
                     return entity;
                 }
             }
@@ -421,45 +421,45 @@ namespace HZC.Database
                 using (var multiReader = conn.QueryMultiple(sql, param))
                 {
                     var entity = multiReader.Read<T>().SingleOrDefault();
-                    var sub1s = multiReader.Read<T1>().ToList();
-                    var sub2s = multiReader.Read<T2>().ToList();
-                    var sub3s = multiReader.Read<T3>().ToList();
-                    func(entity, sub1s, sub2s, sub3s);
+                    var sub1S = multiReader.Read<T1>().ToList();
+                    var sub2S = multiReader.Read<T2>().ToList();
+                    var sub3S = multiReader.Read<T3>().ToList();
+                    func(entity, sub1S, sub2S, sub3S);
                     return entity;
                 }
             }
         }
 
-        public T LoadWith<T, T1, T2, T3, T4>(string sql, Func<T, List<T1>, List<T2>, List<T3>, List<T4>, T> func, Object param = null)
+        public T LoadWith<T, T1, T2, T3, T4>(string sql, Func<T, List<T1>, List<T2>, List<T3>, List<T4>, T> func, object param = null)
         {
             using (var conn = GetConnection())
             {
                 using (var multiReader = conn.QueryMultiple(sql, param))
                 {
                     var entity = multiReader.Read<T>().SingleOrDefault();
-                    var sub1s = multiReader.Read<T1>().ToList();
-                    var sub2s = multiReader.Read<T2>().ToList();
-                    var sub3s = multiReader.Read<T3>().ToList();
-                    var sub4s = multiReader.Read<T4>().ToList();
-                    func(entity, sub1s, sub2s, sub3s, sub4s);
+                    var sub1S = multiReader.Read<T1>().ToList();
+                    var sub2S = multiReader.Read<T2>().ToList();
+                    var sub3S = multiReader.Read<T3>().ToList();
+                    var sub4S = multiReader.Read<T4>().ToList();
+                    func(entity, sub1S, sub2S, sub3S, sub4S);
                     return entity;
                 }
             }
         }
 
-        public T LoadWith<T, T1, T2, T3, T4, T5>(string sql, Func<T, List<T1>, List<T2>, List<T3>, List<T4>, List<T5>, T> func, Object param = null)
+        public T LoadWith<T, T1, T2, T3, T4, T5>(string sql, Func<T, List<T1>, List<T2>, List<T3>, List<T4>, List<T5>, T> func, object param = null)
         {
             using (var conn = GetConnection())
             {
                 using (var multiReader = conn.QueryMultiple(sql, param))
                 {
                     var entity = multiReader.Read<T>().SingleOrDefault();
-                    var sub1s = multiReader.Read<T1>().ToList();
-                    var sub2s = multiReader.Read<T2>().ToList();
-                    var sub3s = multiReader.Read<T3>().ToList();
-                    var sub4s = multiReader.Read<T4>().ToList();
-                    var sub5s = multiReader.Read<T5>().ToList();
-                    func(entity, sub1s, sub2s, sub3s, sub4s, sub5s);
+                    var sub1S = multiReader.Read<T1>().ToList();
+                    var sub2S = multiReader.Read<T2>().ToList();
+                    var sub3S = multiReader.Read<T3>().ToList();
+                    var sub4S = multiReader.Read<T4>().ToList();
+                    var sub5S = multiReader.Read<T5>().ToList();
+                    func(entity, sub1S, sub2S, sub3S, sub4S, sub5S);
                     return entity;
                 }
             }
@@ -469,7 +469,7 @@ namespace HZC.Database
         #region 获取数量
         public int GetCount<T>(MySearchUtil util = null, string tableName = "")
         {
-            string condition = "";
+            string condition;
             DynamicParameters param = null;
 
             if (util != null)
@@ -488,8 +488,7 @@ namespace HZC.Database
             }
             using (var conn = GetConnection())
             {
-                string sql = "SELECT COUNT(0) FROM [" + tableName + "] WHERE " + condition;
-                return conn.ExecuteScalar<int>(sql, param);
+                return conn.ExecuteScalar<int>($"SELECT COUNT(0) FROM [{tableName}] WHERE " + condition, param);
             }
         }
         #endregion
@@ -499,7 +498,7 @@ namespace HZC.Database
         {
             using (var conn = GetConnection())
             {
-                string sql = MyContainer.Get(typeof(T)).InsertSql;
+                var sql = MyContainer.Get(typeof(T)).InsertSql;
                 return conn.ExecuteScalar<int>(sql, t);
             }
         }
@@ -510,7 +509,7 @@ namespace HZC.Database
             using (var conn = GetConnection())
             {
                 conn.Open();
-                string sql = MyContainer.Get(typeof(T)).InsertSql;
+                var sql = MyContainer.Get(typeof(T)).InsertSql;
                 using (var trans = conn.BeginTransaction())
                 {
                     try
@@ -519,10 +518,10 @@ namespace HZC.Database
                         trans.Commit();
                         return rows;
                     }
-                    catch (DataException ex)
+                    catch (DataException)
                     {
                         trans.Rollback();
-                        throw ex;
+                        throw;
                     }
                 }
             }
@@ -534,7 +533,7 @@ namespace HZC.Database
         {
             using (var conn = GetConnection())
             {
-                string sql = MyContainer.Get(typeof(T)).UpdateSql;
+                var sql = MyContainer.Get(typeof(T)).UpdateSql;
                 return conn.Execute(sql, t);
             }
         }
@@ -545,7 +544,7 @@ namespace HZC.Database
             using (var conn = GetConnection())
             {
                 conn.Open();
-                string sql = MyContainer.Get(typeof(T)).UpdateSql;
+                var sql = MyContainer.Get(typeof(T)).UpdateSql;
                 using (var trans = conn.BeginTransaction())
                 {
                     try
@@ -554,10 +553,10 @@ namespace HZC.Database
                         trans.Commit();
                         return rows;
                     }
-                    catch (DataException ex)
+                    catch (DataException)
                     {
                         trans.Rollback();
-                        throw ex;
+                        throw;
                     }
                 }
             }
@@ -580,18 +579,17 @@ namespace HZC.Database
                 }
 
                 var _params = mcu.Parameters;
-                List<string> _update_cols = new List<string>();
-                int idx = 0;
-                string _paramName = "";
+                var updateCols = new List<string>();
+                var idx = 0;
                 foreach (var kv in cols)
                 {
-                    _paramName = "@c" + idx.ToString();
-                    _update_cols.Add(kv.Key + "=" + _paramName);
-                    _params.Add(_paramName, kv.Value);
+                    var paramName = "@c" + idx;
+                    updateCols.Add(kv.Key + "=" + paramName);
+                    _params.Add(paramName, kv.Value);
                     idx++;
                 }
-                string table = GetTableName(typeof(T));
-                string sql = "UPDATE [" + table + "] SET " + string.Join(",", _update_cols) + " WHERE " + mcu.ConditionClaus;
+                var table = GetTableName(typeof(T));
+                var sql = $"UPDATE [" + table + "] SET " + string.Join(",", updateCols) + " WHERE " + mcu.ConditionClaus;
                 return conn.Execute(sql, _params);
             }
         }
@@ -611,17 +609,16 @@ namespace HZC.Database
                 }
 
                 var _params = mcu.Parameters;
-                List<string> _update_cols = new List<string>();
-                int idx = 0;
-                string _paramName = "";
+                var updateCols = new List<string>();
+                var idx = 0;
                 foreach (var kv in cols)
                 {
-                    _paramName = _paramPrefix + "c" + idx.ToString();
-                    _update_cols.Add(kv.Key + "=" + _paramName);
-                    _params.Add(_paramName, kv.Value);
+                    var paramName = _paramPrefix + "c" + idx;
+                    updateCols.Add(kv.Key + "=" + paramName);
+                    _params.Add(paramName, kv.Value);
                     idx++;
                 }
-                string sql = "UPDATE [" + table + "] SET " + string.Join(",", _update_cols) + " WHERE " + mcu.ConditionClaus;
+                var sql = "UPDATE [" + table + "] SET " + string.Join(",", updateCols) + " WHERE " + mcu.ConditionClaus;
                 return conn.Execute(sql, _params);
             }
         }
@@ -636,7 +633,7 @@ namespace HZC.Database
                 {
                     tableName = GetTableName(typeof(T));
                 }
-                return conn.Execute(string.Format(@"DELETE [{0}] WHERE Id=" + _paramPrefix + "id", tableName), new { id = id });
+                return conn.Execute(string.Format(@"DELETE [{0}] WHERE Id=" + _paramPrefix + "id", tableName), new {id });
             }
         }
 
@@ -649,7 +646,7 @@ namespace HZC.Database
                     tableName = GetTableName(typeof(T));
                 }
 
-                return conn.Execute(string.Format(@"DELETE [{0}] WHERE Id in @ids", tableName), new { ids = ids });
+                return conn.Execute(string.Format(@"DELETE [{0}] WHERE Id in @ids", tableName), new {ids });
             }
         }
 
@@ -679,7 +676,7 @@ namespace HZC.Database
                 {
                     tableName = GetTableName(typeof(T));
                 }
-                return conn.Execute(string.Format(@"UPDATE [{0}] SET IsDel=1 WHERE Id=" + _paramPrefix + "id", tableName), new { id = id });
+                return conn.Execute(string.Format(@"UPDATE [{0}] SET IsDel=1 WHERE Id=" + _paramPrefix + "id", tableName), new {id });
             }
         }
 
@@ -691,7 +688,7 @@ namespace HZC.Database
                 {
                     tableName = GetTableName(typeof(T));
                 }
-                return conn.Execute(string.Format(@"UPDATE [{0}] SET IsDel=1 WHERE Id in @ids", tableName), new { ids = ids });
+                return conn.Execute(string.Format(@"UPDATE [{0}] SET IsDel=1 WHERE Id in @ids", tableName), new {ids });
             }
         }
 
@@ -982,7 +979,7 @@ namespace HZC.Database
 
         public KeyValuePairList Add(string column, object value)
         {
-            this.Add(new KeyValuePair<string, object>(column, value));
+            Add(new KeyValuePair<string, object>(column, value));
             return this;
         }
     }

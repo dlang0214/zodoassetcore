@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using HZC.Infrastructure;
 using HZC.SearchUtil;
+using System.Collections.Generic;
+using System.Linq;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
@@ -35,12 +33,7 @@ namespace Zodo.Assets.Application
             var count = db.GetCount<Menu>(MySearchUtil.New()
                 .AndEqual("IsDel", false)
                 .AndEqual("ParentId", entity.Id));
-            if(count > 0)
-            {
-                return "下级菜单不为空，禁止删除";
-            }
-
-            return string.Empty;
+            return count > 0 ? "下级菜单不为空，禁止删除" : string.Empty;
         }
 
         public override string ValidUpdate(Menu entity, IAppUser user)

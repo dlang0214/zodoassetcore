@@ -9,11 +9,11 @@ using Zodo.Assets.Website.Options;
 
 namespace Zodo.Assets.Website.Extensions
 {
-    public class WeixinDeptUtil2
+    public class WeixinDeptUtil
     {
-        private CacheHelper _cacheHelper;
+        private readonly CacheHelper _cacheHelper;
 
-        public WeixinDeptUtil2(IDistributedCache cache)
+        public WeixinDeptUtil(IDistributedCache cache)
         {
             _cacheHelper = new CacheHelper(cache);
         }
@@ -21,16 +21,12 @@ namespace Zodo.Assets.Website.Extensions
         public List<DepartmentList> All()
         {
             var result = _cacheHelper.Get<List<DepartmentList>>("WeixinDepartments");
-            if (result == null)
-            {
-                return Init();
-            }
-            return result;
+            return result ?? Init();
         }
 
         public DepartmentList Get(int id)
         {
-            return All().Where(d => d.id == id).FirstOrDefault();
+            return All().FirstOrDefault(d => d.id == id);
         }
 
         public void Reset()
@@ -49,7 +45,7 @@ namespace Zodo.Assets.Website.Extensions
             else
             {
                 //_cache.Set("WeixinDepartments", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result.department)));
-                _cacheHelper.Set<List<DepartmentList>>("WeixinDepartments", result.department);
+                _cacheHelper.Set("WeixinDepartments", result.department);
                 return result.department;
             }
         }

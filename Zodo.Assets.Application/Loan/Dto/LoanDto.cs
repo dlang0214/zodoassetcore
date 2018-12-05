@@ -4,7 +4,7 @@ using HZC.Infrastructure;
 
 namespace Zodo.Assets.Application
 {
-    public partial class LoanDto
+    public class LoanDto
     {
         /// <summary>
         /// Id

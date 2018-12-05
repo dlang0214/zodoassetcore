@@ -3,7 +3,7 @@ using System;
 
 namespace Zodo.Assets.Application
 {
-    public partial class LoanSearchParam : ISearchParam
+    public class LoanSearchParam : ISearchParam
     {
         public string Key { get; set; }
 
@@ -31,21 +31,21 @@ namespace Zodo.Assets.Application
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().OrderByDesc("UpdateAt");
+            var util = MySearchUtil.New().OrderByDesc("UpdateAt");
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "AssetName", "AssetCode" }, Key.Trim());
+                util.AndContains(new[] { "AssetName", "AssetCode" }, Key.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(From))
             {
-                util.AndContains(new string[] { "FromDeptName", "FromAccountName" }, From.Trim());
+                util.AndContains(new[] { "FromDeptName", "FromAccountName" }, From.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(Target))
             {
-                util.AndContains(new string[] { "TargetDeptName", "TargetAccountName" }, Target.Trim());
+                util.AndContains(new[] { "TargetDeptName", "TargetAccountName" }, Target.Trim());
             }
 
             if (ExpectedReturnDateStart != null)
@@ -96,16 +96,9 @@ namespace Zodo.Assets.Application
                 case 5:
                     util.AndEqual("IsReturn", true).And("ReturnAt>ExpectedReturnAt");
                     break;
-                default:
-                    break;
             }
 
             return util;
-        }
-
-        protected string GetFullColumnName(string columnName)
-        {
-            return "Asset_Loan." + columnName;
         }
     }
 }

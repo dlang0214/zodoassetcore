@@ -10,8 +10,8 @@ namespace Zodo.Assets.Website.Extensions
 {
     public static class WeixinUserUtil
     {
-        private static List<GetMemberResult> _members = null;
-        private static object obj = new object();
+        private static List<GetMemberResult> _members;
+        private static readonly object obj = new object();
         
         private static void Init()
         {
@@ -30,19 +30,18 @@ namespace Zodo.Assets.Website.Extensions
 
         public static List<GetMemberResult> All()
         {
-            if (_members == null)
+            if (_members != null) return _members;
+
+            lock (obj)
             {
-                lock (obj)
-                {
-                    Init();
-                }
+                Init();
             }
             return _members;
         }
 
         public static GetMemberResult Get(string id)
         {
-            return All().Where(a => a.userid == id).SingleOrDefault();
+            return All().SingleOrDefault(a => a.userid == id);
         }
 
         public static void Clear()

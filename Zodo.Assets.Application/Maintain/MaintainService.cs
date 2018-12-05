@@ -1,25 +1,18 @@
-﻿using System;
-using System.Data;
+﻿using HZC.Infrastructure;
 using System.Collections.Generic;
-using HZC.Infrastructure;
-using HZC.SearchUtil;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
 {
-    public partial class MaintainService : BaseService<Maintain>
+    public class MaintainService : BaseService<Maintain>
     {
         public Result<int> Create2(Maintain entity, IAppUser user)
         {
             var result = Create(entity, user);
-            if (result.Code == 200)
-            {
-                if (entity.ServiceResult == "维修中" && entity.AssetId.HasValue)
-                {
-                    string sql = "UPDATE Asset_Asset SET [State]='维修',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
-                    db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id });
-                }
-            }
+            if (result.Code != 200) return result;
+            if (entity.ServiceResult != "维修中" || !entity.AssetId.HasValue) return result;
+            const string sql = "UPDATE Asset_Asset SET [State]='维修',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
+            db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id });
             return result;
         }
 
@@ -28,19 +21,15 @@ namespace Zodo.Assets.Application
             var result = Update(entity, user);
             if (result.Code == 200)
             {
-                if (entity.ServiceResult == "维修中" && entity.AssetId.HasValue)
-                {
-                    string sql = "UPDATE Asset_Asset SET State='维修',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
-                    db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id });
-                }
+                if (entity.ServiceResult != "维修中" || !entity.AssetId.HasValue) return result;
+                const string sql = "UPDATE Asset_Asset SET State='维修',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
+                db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id });
             }
             else
             {
-                if (entity.ServiceResult != "维修中" && entity.AssetId.HasValue)
-                {
-                    string sql = "UPDATE Asset_Asset SET State=@State,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
-                    db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id, State = entity.OrigState });
-                }
+                if (entity.ServiceResult == "维修中" || !entity.AssetId.HasValue) return result;
+                const string sql = "UPDATE Asset_Asset SET State=@State,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id";
+                db.Execute(sql, new { Id = entity.AssetId, UserName = user.Name, UserId = user.Id, State = entity.OrigState });
             }
 
             return result;
@@ -52,8 +41,8 @@ namespace Zodo.Assets.Application
             {
                 param = new MaintainSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Query<MaintainDto>(util, pageIndex, pageSize, table: "Asset_Maintain", cols: cols);
+            var util = param.ToSearchUtil();
+            return db.Query<MaintainDto>(util, pageIndex, pageSize, "Asset_Maintain", cols);
         }
 
         public IEnumerable<MaintainDto> ListDto(MaintainSearchParam param = null, string cols = "*")
@@ -62,8 +51,8 @@ namespace Zodo.Assets.Application
             {
                 param = new MaintainSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Fetch<MaintainDto>(util, table: "Asset_Maintain", cols: cols);
+            var util = param.ToSearchUtil();
+            return db.Fetch<MaintainDto>(util, "Asset_Maintain", cols);
         }
 
         #region 实体验证

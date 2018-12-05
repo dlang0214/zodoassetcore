@@ -1,10 +1,7 @@
 ﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
-using System.Collections.Generic;
-using System.Web;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 

@@ -1,17 +1,15 @@
 ﻿using HZC.Database;
 using HZC.Infrastructure;
-using HZC.SearchUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
 {
     public class ServiceApplyService
     {
-        private MyDbUtil db = new MyDbUtil();
+        private readonly MyDbUtil _db = new MyDbUtil();
         
         /// <summary>
         /// 创建
@@ -29,7 +27,7 @@ namespace Zodo.Assets.Application
             entity.Reply = "";
             entity.Score = "--";
 
-            var id = db.Create<ServiceApply>(entity);
+            var id = _db.Create(entity);
             return id > 0 ? ResultUtil.Success(id) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
 
@@ -42,8 +40,9 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result Receive(int id, string userId, string userName)
         {
-            string sql = "UPDATE [Asset_ServiceApply] SET [State]='已接受',ReceiveAt=GETDATE(),ServiceManId=@UserId,ServiceManName=@UserName WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, UserId = userId, UserName = userName });
+            const string sql =
+                "UPDATE [Asset_ServiceApply] SET [State]='已接受',ReceiveAt=GETDATE(),ServiceManId=@UserId,ServiceManName=@UserName WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, UserId = userId, UserName = userName });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -56,8 +55,9 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result Complete(int id, string userId, string userName)
         {
-            string sql = "UPDATE [Asset_ServiceApply] SET [State]='待评价',CompleteAt=GETDATE(),ServiceManId=@UserId,ServiceManName=@UserName WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, UserId = userId, UserName = userName });
+            const string sql =
+                "UPDATE [Asset_ServiceApply] SET [State]='待评价',CompleteAt=GETDATE(),ServiceManId=@UserId,ServiceManName=@UserName WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, UserId = userId, UserName = userName });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -87,8 +87,8 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "仅申请人可执行此操作");
             }
 
-            string sql = "UPDATE [Asset_ServiceApply] SET [State]='已评价',Score=@Score,Reply=@Reply WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, Score = score, Reply = reply });
+            const string sql = "UPDATE [Asset_ServiceApply] SET [State]='已评价',Score=@Score,Reply=@Reply WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, Score = score, Reply = reply });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -102,8 +102,8 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result Remark(int id, string reason, string analysis, string solution)
         {
-            string sql = "UPDATE [Asset_ServiceApply] SET Reason=@Reason,Analysis=@Analysis,Solution=@Solution WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, Reason = reason, Analysis = analysis, Solution = solution });
+            const string sql = "UPDATE [Asset_ServiceApply] SET Reason=@Reason,Analysis=@Analysis,Solution=@Solution WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, Reason = reason, Analysis = analysis, Solution = solution });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -115,8 +115,8 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result SetReason(int id, string reason)
         {
-            string sql = "UPDATE [Asset_ServiceApply] SET Reason=@Reason WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, Reason = reason });
+            const string sql = "UPDATE [Asset_ServiceApply] SET Reason=@Reason WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, Reason = reason });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -128,8 +128,8 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public Result SetSolution(int id, string solution)
         {
-            string sql = "UPDATE [Asset_ServiceApply] SET Solution=@Solution WHERE Id=@Id";
-            var row = db.Execute(sql, new { Id = id, Solution = solution });
+            const string sql = "UPDATE [Asset_ServiceApply] SET Solution=@Solution WHERE Id=@Id";
+            var row = _db.Execute(sql, new { Id = id, Solution = solution });
             return row > 0 ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库操作失败");
         }
 
@@ -140,7 +140,7 @@ namespace Zodo.Assets.Application
         /// <returns></returns>
         public ServiceApply Load(int id)
         {
-            return db.Load<ServiceApply>(id);
+            return _db.Load<ServiceApply>(id);
         }
 
         /// <summary>
@@ -153,13 +153,13 @@ namespace Zodo.Assets.Application
         public PageList<ServiceApply> PageList(int pageIndex, int pageSize, ServiceApplySearchParam param)
         {
             var util = param.ToSearchUtil();
-            return db.Query<ServiceApply>(util, pageIndex, pageSize);
+            return _db.Query<ServiceApply>(util, pageIndex, pageSize);
         }
 
         public List<ServiceApply> Fetch(ServiceApplySearchParam param)
         {
             var util = param.ToSearchUtil();
-            return db.Fetch<ServiceApply>(util).ToList();
+            return _db.Fetch<ServiceApply>(util).ToList();
         }
     }
 }

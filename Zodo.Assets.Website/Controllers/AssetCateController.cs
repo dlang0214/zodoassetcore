@@ -1,11 +1,9 @@
 ﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 
@@ -13,19 +11,16 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class AssetCateController : MvcController
     {
-        private AssetCateService service = new AssetCateService();
+        private readonly AssetCateService _service = new AssetCateService();
 
         #region 首页
         // GET: AssetCate
-        public ActionResult Index()
-        {
-            return View();
-        }
+        public ActionResult Index() => View();
 
         public ActionResult Get()
         {
-            var depts = AssetCateUtil.All();
-            return Json(ResultUtil.Success<List<AssetCateDto>>(depts));
+            var deptList = AssetCateUtil.All();
+            return Json(ResultUtil.Success<List<AssetCateDto>>(deptList));
         }
         #endregion
 
@@ -35,32 +30,27 @@ namespace Zodo.Assets.Website.Controllers
             AssetCate entity;
             if (!id.HasValue)
             {
-                entity = new AssetCate();
-                entity.Sort = 99;
+                entity = new AssetCate
+                {
+                    Sort = 99
+                };
 
                 if (p.HasValue)
                 {
                     entity.ParentId = (int)p;
-                    var children = AssetCateUtil.All().Where(d => d.ParentId == p);
-                    if (children.Count() == 0)
-                    {
-                        entity.Sort = 1;
-                    }
-                    else
-                    {
-                        entity.Sort = children.Max(c => c.Sort) + 1;
-                    }
+                    var children = AssetCateUtil.All().Where(d => d.ParentId == p).ToList();
+                    entity.Sort = !children.Any() ? 1 : children.Max(c => c.Sort) + 1;
                 }
             }
             else
             {
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
                 }
             }
-            InitUI();
+            InitUi();
             return View(entity);
         }
 
@@ -68,11 +58,11 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
         {
+            var entity = new AssetCate();
             try
             {
-                AssetCate entity = new AssetCate();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
 
                 return Json(result);
             }
@@ -90,7 +80,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var result = service.Delete(id, AppUser);
+                var result = _service.Delete(id, AppUser);
                 return Json(result);
             }
             catch (Exception ex)
@@ -101,10 +91,9 @@ namespace Zodo.Assets.Website.Controllers
         #endregion
 
         #region 私有方法
-        private void InitUI()
+        private void InitUi()
         {
-            var cates = AssetCateUtil.All();
-            var list = cates.ToSelectList("Id", "Name");
+            var list = AssetCateUtil.All().ToSelectList("Id", "Name");
             ViewBag.Parents = list;
         }
         #endregion

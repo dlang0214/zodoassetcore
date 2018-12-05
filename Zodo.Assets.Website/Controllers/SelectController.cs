@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HZC.Infrastructure;
+﻿using HZC.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Zodo.Assets.Application;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    public class SelectController : Controller
+    public class SelectController : MvcController
     {
         public IActionResult DeptAndAccount()
         {
-            var deptService = new DeptService();
             var accountService = new AccountService();
 
             var depts = DeptUtil.Tree();
@@ -33,7 +28,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             var service = new AccountService();
             var accounts = service.GetAccountsBaseInfo(param.Dept, param.Key);
-            return Json(ResultUtil.Success<List<AccountBaseDto>>(accounts));
+            return Json(ResultUtil.Success(accounts));
         }
 
         public ActionResult Assets()
@@ -58,12 +53,12 @@ namespace Zodo.Assets.Website.Controllers
             {
                 if (deptId > 0)
                 {
-                    param.isContainSubDept = true;
+                    param.IsContainSubDept = true;
                     param.DeptId = deptId;
                 }
                 else
                 {
-                    param.isContainSubDept = false;
+                    param.IsContainSubDept = false;
                     param.DeptId = 0;
                 }
             }
@@ -72,7 +67,7 @@ namespace Zodo.Assets.Website.Controllers
                 param.Key = key;
             }
             var assets = service.ListDto(param);
-            return Json(ResultUtil.Success<IEnumerable<AssetDto>>(assets));
+            return Json(ResultUtil.Success(assets));
         }
     }
 }

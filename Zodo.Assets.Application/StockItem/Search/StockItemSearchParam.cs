@@ -1,10 +1,9 @@
 ﻿using HZC.SearchUtil;
-using System;
 using Zodo.Assets.Application;
 
 namespace Zodo.Assets.Services
 {
-    public partial class StockItemSearchParam : ISearchParam
+    public class StockItemSearchParam : ISearchParam
     {
         public string Key { get; set; }
 
@@ -24,7 +23,7 @@ namespace Zodo.Assets.Services
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().AndEqual("IsDel", false);
+            var util = MySearchUtil.New().AndEqual("IsDel", false);
 
             if (StockId > 0)
             {
@@ -48,7 +47,7 @@ namespace Zodo.Assets.Services
 
             if (IsFinish.HasValue)
             {
-                util.AndEqual("IsFinish", IsFinish.HasValue);
+                util.AndEqual("IsFinish", IsFinish.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(Checkor))
@@ -58,7 +57,7 @@ namespace Zodo.Assets.Services
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "AssetCode", "FinancialCode", "AssetName", "DeptName", "AccountName" }, Key.Trim());
+                util.AndContains(new[] { "AssetCode", "FinancialCode", "AssetName", "DeptName", "AccountName" }, Key.Trim());
             }
 
             if (OrderBy.HasValue)

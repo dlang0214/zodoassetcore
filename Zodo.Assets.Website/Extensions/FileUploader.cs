@@ -33,32 +33,26 @@ namespace Zodo.Assets.Website.Extensions
             {
                 return new FileUploadResult { Code = (int)ResultCodes.验证失败, Message = "文件大小超过限制" };
             }
-            string _origName;       // 原始文件名
-            string _ext;            // 扩展名
-            string _dateFolder;     // 服务器端的日期文件夹
-            string _absSaveFolder;  // 服务器端文件保存文件夹
-            string _fileName;       // 生成的新文件名
-            string _filePath;       // 新文件的相对路径
 
             var fileName = file.Name;
-            _ext = GetFileExt(fileName);
-            if (!opts.Exts.Contains(_ext))
+            var ext = GetFileExt(fileName);
+            if (!opts.Exts.Contains(ext))
             {
                 return new FileUploadResult { Code = (int)ResultCodes.验证失败, Message = "不受支持的文件类型" };
             }
             
-            _origName = GetFileName(fileName);
-            _dateFolder = DateTime.Today.ToString("yyMM");
-            _absSaveFolder = Path.Combine(_hostingEnvironment.WebRootPath, basePath, _dateFolder);
-            _fileName = Guid.NewGuid().ToString("N") + "." + _ext;
-            _filePath = Path.Combine(basePath, _dateFolder, _fileName);
+            var origName = GetFileName(fileName);
+            var dateFolder = DateTime.Today.ToString("yyMM");
+            var absSaveFolder = Path.Combine(_hostingEnvironment.WebRootPath, basePath, dateFolder);
+            var newFileName = Guid.NewGuid().ToString("N") + "." + ext;
+            var filePath = Path.Combine(basePath, dateFolder, newFileName);
 
-            if (!Directory.Exists(_absSaveFolder))
+            if (!Directory.Exists(absSaveFolder))
             {
-                Directory.CreateDirectory(_absSaveFolder);
+                Directory.CreateDirectory(absSaveFolder);
             }
 
-            using (var stream = new FileStream(Path.Combine(_absSaveFolder, _fileName), FileMode.Create))
+            using (var stream = new FileStream(Path.Combine(absSaveFolder, newFileName), FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
@@ -67,10 +61,10 @@ namespace Zodo.Assets.Website.Extensions
             {
                 Code = 200,
                 Message = "",
-                OrigName = _origName,
-                Ext = _ext,
-                Path = _filePath,
-                Name = _fileName
+                OrigName = origName,
+                Ext = ext,
+                Path = filePath,
+                Name = newFileName
             };
         }
 
@@ -118,6 +112,6 @@ namespace Zodo.Assets.Website.Extensions
         /// <summary>
         /// 扩展名限制
         /// </summary>
-        public string[] Exts { get; set; } = new string[] { "png", "jpg", "jpeg", "gif", "doc", "docx", "xls", "xls", "zip", "rar", "7z" };
+        public string[] Exts { get; set; } = new[] { "png", "jpg", "jpeg", "gif", "doc", "docx", "xls", "xls", "zip", "rar", "7z" };
     }
 }

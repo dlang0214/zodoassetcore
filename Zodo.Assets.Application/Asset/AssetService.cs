@@ -41,8 +41,8 @@ namespace Zodo.Assets.Application
             {
                 param = new AssetSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
-            return db.Query<AssetDto>(util, pageIndex, pageSize, table: "AssetView", cols: cols);
+            var util = param.ToSearchUtil();
+            return db.Query<AssetDto>(util, pageIndex, pageSize, "AssetView", cols);
         }
 
         public IEnumerable<AssetDto> ListDto(AssetSearchParam param = null, string cols = "*")
@@ -77,12 +77,12 @@ namespace Zodo.Assets.Application
             {
                 if (deptId > 0)
                 {
-                    param.isContainSubDept = true;
+                    param.IsContainSubDept = true;
                     param.DeptId = deptId;
                 }
                 else
                 {
-                    param.isContainSubDept = false;
+                    param.IsContainSubDept = false;
                     param.DeptId = 0;
                 }
             }
@@ -96,34 +96,29 @@ namespace Zodo.Assets.Application
         #endregion
 
         #region 资产调配
+
         /// <summary>
         /// 转移资产
         /// </summary>
-        /// <param name="assetId">资产id</param>
-        /// <param name="deptId">目标部门id</param>
-        /// <param name="accountId">目标员工id</param>
-        /// <param name="pics">过程pic</param>
-        /// <returns></returns>
-        public Result Move(AssetLog log, string newPositon, IAppUser user)
+        public Result Move(AssetLog log, string newPosition, IAppUser user)
         {
             var asset = LoadDto(log.AssetId);
             if (asset == null)
             {
                 return ResultUtil.Do(ResultCodes.数据不存在, "指定的资产不存在或已删除");
             }
-            if (asset.State == "报废")
+            switch (asset.State)
             {
-                return ResultUtil.Do(ResultCodes.数据不存在, "指定的资产已报废，禁止操作");
-            }
-            if (asset.State == "借出")
-            {
-                return ResultUtil.Do(ResultCodes.数据不存在, "指定的资产已借出，禁止操作");
+                case "报废":
+                    return ResultUtil.Do(ResultCodes.数据不存在, "指定的资产已报废，禁止操作");
+                case "借出":
+                    return ResultUtil.Do(ResultCodes.数据不存在, "指定的资产已借出，禁止操作");
             }
 
             log.AssetCode = asset.Code;
             log.AssetName = asset.Name;
 
-            if (log.OperateAt == null || log.OperateAt < DateTime.Parse("1900-1-1"))
+            if (log.OperateAt < DateTime.Parse("1900-1-1"))
             {
                 return ResultUtil.Do(ResultCodes.验证失败, "调配日期无效");
             }
@@ -159,23 +154,28 @@ namespace Zodo.Assets.Application
                 {
                     return ResultUtil.Do(ResultCodes.数据不存在, "目标部门不存在");
                 }
-
-                log.TargetDeptId = targetDept.Id;
-                log.TargetDeptName = targetDept.Name;
-                targetAccount = null;
-                log.TargetAccountId = 0;
-                log.TargetAccountName = "";
+                else
+                {
+                    log.TargetDeptId = targetDept.Id;
+                    log.TargetDeptName = targetDept.Name;
+                    log.TargetAccountId = 0;
+                    log.TargetAccountName = "";
+                }
             }
 
             log.Type = "调配";
 
-            KeyValuePairList sqls = new KeyValuePairList();
-            sqls.Add("UPDATE Asset_Asset SET DeptId=@DeptId,@Position=@Position,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new { Id = log.AssetId, Position = newPositon, DeptId = log.TargetDeptId, AccountId = log.TargetAccountId, UserId = user.Id, UserName = user.Name });
+            var sql = new KeyValuePairList
+            {
+                {
+                    "UPDATE Asset_Asset SET DeptId=@DeptId,@Position=@Position,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new { Id = log.AssetId, Position = newPosition, DeptId = log.TargetDeptId, AccountId = log.TargetAccountId, UserId = user.Id, UserName = user.Name }
+                }
+            };
             log.BeforeCreate(user);
-            sqls.Add(db.GetCommonInsertSql<AssetLog>(), log);
+            sql.Add(db.GetCommonInsertSql<AssetLog>(), log);
 
-            var row = db.ExecuteTran(sqls);
+            var row = db.ExecuteTran(sql);
             return row ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");
         }
         #endregion
@@ -440,110 +440,77 @@ namespace Zodo.Assets.Application
         #region 分类报表
         public List<AssetGroupDto> GetCateGroup(AssetSearchParam param)
         {
-            var all = ListDto(param);
+            var all = ListDto(param).ToList();
             var groups = all.Select(a => a.AssetCate).Distinct();
-            var result = new List<AssetGroupDto>();
-            foreach (var g in groups)
-            {
-                result.Add(new AssetGroupDto
-                {
-                    GroupName = string.IsNullOrWhiteSpace(g) ? "其他分类" : g,
-                    Assets = all.Where(a => a.AssetCate == g).ToList()
-                });
-            }
 
-            return result;
+            return groups.Select(g => new AssetGroupDto
+            {
+                GroupName = string.IsNullOrWhiteSpace(g) ? "其他分类" : g,
+                Assets = all.Where(a => a.AssetCate == g).ToList()
+            }).ToList();
         }
         #endregion
 
         #region 部门报表
         public List<AssetGroupDto> GetDeptGroup(AssetSearchParam param)
         {
-            var all = ListDto(param);
+            var all = ListDto(param).ToList();
             var groups = all.Select(a => a.DeptName).Distinct();
-            var result = new List<AssetGroupDto>();
-            foreach (var g in groups)
-            {
-                result.Add(new AssetGroupDto
-                {
-                    GroupName = string.IsNullOrWhiteSpace(g) ? "闲置物品" : g,
-                    Assets = all.Where(a => a.DeptName == g).ToList()
-                });
-            }
 
-            return result;
+            return groups.Select(g => new AssetGroupDto
+            {
+                GroupName = string.IsNullOrWhiteSpace(g) ? "闲置物品" : g, Assets = all.Where(a => a.DeptName == g).ToList()
+            }).ToList();
         }
         #endregion
 
         #region 用户报表
         public List<AssetGroupDto> GetAccountGroup(AssetSearchParam param)
         {
-            var all = ListDto(param);
+            var all = ListDto(param).ToList();
             var groups = all.Select(a => a.AccountName).Distinct();
-            var result = new List<AssetGroupDto>();
-            foreach (var g in groups)
-            {
-                if (!string.IsNullOrWhiteSpace(g))
-                {
-                    result.Add(new AssetGroupDto
-                    {
-                        GroupName = g,
-                        Assets = all.Where(a => a.AccountName == g).ToList()
-                    });
-                }
-            }
 
-            return result;
+            return groups.Where(g => !string.IsNullOrWhiteSpace(g))
+                .Select(g => new AssetGroupDto {GroupName = g, Assets = all.Where(a => a.AccountName == g).ToList()})
+                .ToList();
         }
         #endregion
 
         #region 状态报表
         public List<AssetGroupDto> GetStateGroup(AssetSearchParam param)
         {
-            var all = ListDto(param);
+            var all = ListDto(param).ToList();
             var groups = all.Select(a => a.State).Distinct();
-            var result = new List<AssetGroupDto>();
-            foreach (var g in groups)
-            {
-                result.Add(new AssetGroupDto
+
+            return groups.Select(g => new AssetGroupDto
                 {
                     GroupName = string.IsNullOrWhiteSpace(g) ? "其他状态" : g,
                     Assets = all.Where(a => a.State == g).ToList()
-                });
-            }
-
-            return result;
+                })
+                .ToList();
         }
         #endregion
 
         #region 健康度报表
         public List<AssetGroupDto> GetHealthyGroup(AssetSearchParam param)
         {
-            var all = ListDto(param);
+            var all = ListDto(param).ToList();
             var groups = all.Select(a => a.Healthy).Distinct();
-            var result = new List<AssetGroupDto>();
-            foreach (var g in groups)
-            {
-                result.Add(new AssetGroupDto
-                {
-                    GroupName = string.IsNullOrWhiteSpace(g) ? "其他" : g,
-                    Assets = all.Where(a => a.Healthy == g).ToList()
-                });
-            }
 
-            return result;
+            return groups.Select(g =>
+            {
+                var dto = new AssetGroupDto
+                {
+                    Assets = all.Where(a => a.Healthy == g).ToList(),
+                    GroupName = string.IsNullOrWhiteSpace(g) ? "其他" : g
+                };
+                return dto;
+            }).ToList();
         }
         #endregion
 
         #region 实体验证
-        public override string ValidCreate(Asset entity, IAppUser user)
-        {
-            //if(entity.DeptId == 0)
-            //{
-            //    return "使用部门不能为空";
-            //}
-            return ValidUpdate(entity, user);
-        }
+        public override string ValidCreate(Asset entity, IAppUser user) => ValidUpdate(entity, user);
 
         public override string ValidUpdate(Asset entity, IAppUser user)
         {

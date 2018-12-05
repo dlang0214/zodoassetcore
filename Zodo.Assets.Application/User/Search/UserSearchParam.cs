@@ -8,7 +8,7 @@ namespace Zodo.Assets.Application
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New()
+            var util = MySearchUtil.New()
                 .AndNotEqual("Name", "admin")
                 .AndEqual("IsDel", false)
                 .OrderBy("Id");

@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Zodo.Assets.Website
 {
@@ -24,9 +20,9 @@ namespace Zodo.Assets.Website
             output.TagName = "div";
             output.Attributes.Add("class", "weui-flex");
 
-            int pages = Total / PageSize + (Total % PageSize == 0 ? 0 : 1);
+            var pages = Total / PageSize + (Total % PageSize == 0 ? 0 : 1);
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             PageIndex = PageIndex <= 0 ? 1 : PageIndex;
             PageIndex = PageIndex > pages ? pages : PageIndex;

@@ -1,9 +1,6 @@
-﻿using HZC.Database;
-using HZC.Infrastructure;
+﻿using HZC.Infrastructure;
 using HZC.SearchUtil;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
@@ -15,16 +12,16 @@ namespace Zodo.Assets.Application
             var error = ValidCreate(entity, user);
             if (!string.IsNullOrWhiteSpace(error))
             {
-                return ResultUtil.Do<int>(ResultCodes.验证失败, 0, "键已存在");
+                return ResultUtil.Do(ResultCodes.验证失败, 0, "键已存在");
             }
 
             entity.BeforeCreate(user);
-            var row = db.Create<DataItem>(entity);
+            var row = db.Create(entity);
             if (row > 0)
             {
                 DataItemUtil.Clear();
             }
-            return row > 0 ? ResultUtil.Success<int>(row) : ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0);
+            return row > 0 ? ResultUtil.Success(row) : ResultUtil.Do(ResultCodes.数据库操作失败, 0);
         }
 
         public Result Create(string key, string value, IAppUser user)
@@ -39,7 +36,7 @@ namespace Zodo.Assets.Application
 
         public Result Update(string key, string value, IAppUser user)
         {
-            string sql = "UPDATE [Base_DataItem] SET V=@V,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE K=@K";
+            const string sql = "UPDATE [Base_DataItem] SET V=@V,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE K=@K";
             var row = db.Execute(sql, new { K = key, V = value, UserId = user.Id, UserName = user.Name });
             if (row > 0)
             {
@@ -50,7 +47,7 @@ namespace Zodo.Assets.Application
 
         public Result Remove(string key)
         {
-            string sql = "UPDATE [Base_DataItem] SET IsDel=1 WHERE K=@K";
+            const string sql = "UPDATE [Base_DataItem] SET IsDel=1 WHERE K=@K";
             var row = db.Execute(sql, new { K = key });
             if (row > 0)
             {
@@ -77,22 +74,11 @@ namespace Zodo.Assets.Application
             }
 
             var count = db.GetCount<DataItem>(MySearchUtil.New().AndEqual("K", entity.K).AndEqual("IsDel", false));
-            if (count > 0)
-            {
-                return "键已存在";
-            }
-
-            return string.Empty;
+            return count > 0 ? "键已存在" : string.Empty;
         }
 
-        public override string ValidUpdate(DataItem entity, IAppUser user)
-        {
-            return string.Empty;
-        }
+        public override string ValidUpdate(DataItem entity, IAppUser user) => string.Empty;
 
-        public override string ValidDelete(DataItem entity, IAppUser user)
-        {
-            return string.Empty;
-        }
+        public override string ValidDelete(DataItem entity, IAppUser user) => string.Empty;
     }
 }

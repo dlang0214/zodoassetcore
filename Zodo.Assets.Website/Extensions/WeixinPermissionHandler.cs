@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Zodo.Assets.Website.Extensions
@@ -23,8 +20,8 @@ namespace Zodo.Assets.Website.Extensions
             }
             else
             {
-                var httpContext = (context.Resource as Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext).HttpContext;
-                httpContext.Response.Redirect("/OAuth2/Index");
+                var httpContext = (context.Resource as Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext)?.HttpContext;
+                httpContext?.Response.Redirect("/OAuth2/Index");
             }
 
             return Task.CompletedTask;

@@ -4,7 +4,7 @@ using System;
 
 namespace Zodo.Assets.Application
 {
-    public partial class MaintainDto
+    public class MaintainDto
     {
         public int Id { get; set; }
 

@@ -17,7 +17,6 @@ using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    [Authorize]
     public class MenuController : MvcController
     {
         private MenuService service = new MenuService();

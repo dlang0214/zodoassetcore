@@ -3,7 +3,7 @@ using System;
 
 namespace Zodo.Assets.Application
 {
-    public partial class MaintainSearchParam : ISearchParam
+    public class MaintainSearchParam : ISearchParam
     {
         public string Key { get; set; }
 
@@ -21,15 +21,13 @@ namespace Zodo.Assets.Application
 
         public string ServiceResult { get; set; }
 
-        public string Satisfaction { get; set; }
-
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().OrderByDesc("UpdateAt");
+            var util = MySearchUtil.New().OrderByDesc("UpdateAt");
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "AssetCode", "AssetName", "DeptName", "AccountName", "Position", "Describe", "ServiceManName" }, Key.Trim());
+                util.AndContains(new[] { "AssetCode", "AssetName", "DeptName", "AccountName", "Position", "Describe", "ServiceManName", "Satisfaction" }, Key.Trim());
             }
 
             if (AssetId.HasValue)

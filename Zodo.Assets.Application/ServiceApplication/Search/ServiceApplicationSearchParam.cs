@@ -30,7 +30,7 @@ namespace Zodo.Assets.Application
             var util = MySearchUtil.New().AndEqual("IsDel", false).OrderByDesc("CreateAt");
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "AccountName", "Describe" }, Key);
+                util.AndContains(new[] { "AccountName", "Describe" }, Key);
             }
 
             if (Dept > 0)

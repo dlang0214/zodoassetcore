@@ -16,12 +16,10 @@ namespace HZC.Database
         #region 公共方法
         public static MyEntityInfo Get(Type type)
         {
-            MyEntityInfo result;
-            if (!_dict.TryGetValue(type.Name, out result))
-            {
-                result = new MyEntityInfo(type);
-                _dict.TryAdd(type.Name, result);
-            }
+            if (_dict.TryGetValue(type.Name, out var result)) return result;
+
+            result = new MyEntityInfo(type);
+            _dict.TryAdd(type.Name, result);
             return result;
         }
         #endregion

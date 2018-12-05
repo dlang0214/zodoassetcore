@@ -19,7 +19,6 @@ using Zodo.Assets.Website.Models;
 
 namespace Zodo.Assets.Website.Controllers
 {
-
     public class StockItemController : MvcController
     {
         private StockService stockService = new StockService();

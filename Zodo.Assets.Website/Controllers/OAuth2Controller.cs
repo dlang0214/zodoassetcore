@@ -1,7 +1,6 @@
 ﻿using log4net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -18,26 +17,26 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class OAuth2Controller : Controller
     {
-        private readonly string corpId = WeixinWorkOptions.CorpId;
-        private readonly string secret = WeixinWorkOptions.Secret;
-        private readonly string agentId = WeixinWorkOptions.AgentId;
+        private readonly string _corpId = WeixinWorkOptions.CorpId;
+        private readonly string _secret = WeixinWorkOptions.Secret;
+        private readonly string _agentId = WeixinWorkOptions.AgentId;
 
-        private readonly WeixinDeptUtil2 deptUtil;
-        private readonly WeixinUserUtil2 userUtil;
+        private readonly WeixinDeptUtil _deptUtil;
+        private readonly WeixinUserUtil2 _userUtil;
 
-        private ILog log = LogManager.GetLogger(Startup.LogResposition.Name, "OAuth2Controller");
+        private readonly ILog _log = LogManager.GetLogger(Startup.LogResposition.Name, "OAuth2Controller");
 
         public OAuth2Controller(IDistributedCache cache)
         {
-            deptUtil = new WeixinDeptUtil2(cache);
-            userUtil = new WeixinUserUtil2(cache);
+            _deptUtil = new WeixinDeptUtil(cache);
+            _userUtil = new WeixinUserUtil2(cache);
         }
 
         public IActionResult Index(string returnUrl)
         {
             //string state = "Zodolabs-Asset-" + DateTime.Now.Millisecond;
-            string redirectUrl = "http://" + HttpContext.Request.Host.Host + "/OAuth2/UserInfoCallback?returnUrl=" + returnUrl.UrlEncode();
-            string url = OAuth2Api.GetCode(corpId, redirectUrl, "", agentId, scope: "snsapi_base");
+            var redirectUrl = "http://" + HttpContext.Request.Host.Host + "/OAuth2/UserInfoCallback?returnUrl=" + returnUrl.UrlEncode();
+            var url = OAuth2Api.GetCode(_corpId, redirectUrl, "", _agentId);
             return Redirect(url);
         }
 
@@ -50,32 +49,31 @@ namespace Zodo.Assets.Website.Controllers
 
             try
             {
-                var token = AccessTokenContainer.TryGetToken(corpId, secret);
+                var token = AccessTokenContainer.TryGetToken(_corpId, _secret);
                 if (string.IsNullOrWhiteSpace(token))
                 {
-                    log.Error("获取ACCESSTOKEN详情失败：AccessTokenContainer.TryGetToken()获取失败");
+                    _log.Error("获取ACCESSTOKEN详情失败：AccessTokenContainer.TryGetToken()获取失败");
                     return RedirectToAction("Error", new { title = "访问失败", message = "从微信服务端请求数据失败，请稍候再试。" });
                 }
                 
                 var user = OAuth2Api.GetUserId(token, code);
                 if (user.errcode != Senparc.Weixin.ReturnCode_Work.请求成功)
                 {
-                    log.Error("获取用户ID失败：" + user.errmsg);
+                    _log.Error("获取用户ID失败：" + user.errmsg);
                     return RedirectToAction("Error", new { title = "加载失败", message = "从微信服务端获取用户信息失败，请联系管理员或稍候再试" });
                 }
 
                 if (string.IsNullOrWhiteSpace(user.UserId))
                 {
-                    log.Error("获取用户ID失败，接口调用成功，但USERID为空：" + JsonConvert.SerializeObject(user));
+                    _log.Error("获取用户ID失败，接口调用成功，但USERID为空：" + JsonConvert.SerializeObject(user));
                     return RedirectToAction("Error", new { title = "拒绝访问", message = "仅限企业微信内部员工使用，未能获取到您的数据，请联系管理员" });
                 }
                 else
                 {
-                    string userName = "";
-                    var userInfo = userUtil.Get(user.UserId);
+                    var userInfo = _userUtil.Get(user.UserId);
                     if (userInfo != null)
                     {
-                        userName = userInfo.name;
+                        var userName = userInfo.name;
 
                         var deptId = 0;
                         if (userInfo.department.Length > 0)
@@ -83,27 +81,30 @@ namespace Zodo.Assets.Website.Controllers
                             deptId = (int)userInfo.department.Max();
                         }
 
-                        var dept = deptUtil.Get(deptId);
+                        var dept = _deptUtil.Get(deptId);
                         if (dept == null)
                         {
-                            log.Error("获取部门失败，用户消息：" + string.Join(',', userInfo.department));
+                            _log.Error("获取部门失败，用户消息：" + string.Join(',', userInfo.department));
                             return RedirectToAction("Error", new { title = "访问失败", message = "获取部门数据失败，请联系管理员" });
                         }
 
-                        var userDto = new WeixinUser();
-                        userDto.UserId = userInfo.userid.ToLower();
-                        userDto.UserName = userInfo.name;
-                        userDto.DeptId = deptId;
-                        userDto.DeptName = dept.name;
+                        var userDto = new WeixinUser
+                        {
+                            UserId = userInfo.userid.ToLower(),
+                            UserName = userInfo.name,
+                            DeptId = deptId,
+                            DeptName = dept.name
+                        };
 
-                        ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, "WeixinUserName", ClaimTypes.Role);
+                        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, "WeixinUserName", ClaimTypes.Role);
+
                         identity.AddClaim(new Claim("WeixinUserId", user.UserId));
                         identity.AddClaim(new Claim("WeixinUserName", userName));
                         identity.AddClaim(new Claim("WeixinDeptId", dept.id.ToString()));
                         identity.AddClaim(new Claim("WeixinDeptName", dept.name));
                         identity.AddClaim(new Claim(ClaimTypes.Role, "Weixin"));
 
-                        ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                        var principal = new ClaimsPrincipal(identity);
                         HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                         HttpContext.SignInAsync(principal, new AuthenticationProperties
                         {
@@ -111,19 +112,19 @@ namespace Zodo.Assets.Website.Controllers
                             RedirectUri = "/OAuth2/Index"
                         });
                         
-                        HttpContext.Session.Set<WeixinUser>("WeixinUser", userDto);
+                        HttpContext.Session.Set("WeixinUser", userDto);
                         return Redirect(returnUrl);
                     }
                     else
                     {
-                        log.Error("获取用户详情失败：缓存中不存在此");
+                        _log.Error("获取用户详情失败：缓存中不存在此");
                         return RedirectToAction("Error", new { title = "无效访问", message = "仅限企业微信内部员工使用，若您加入企业，请联系管理员" });
                     }
                 }
             }
             catch (Exception ex)
             {
-                log.Error(ex);
+                _log.Error(ex);
                 return RedirectToAction("Error", new { title = "访问失败", message = "系统错误：" + ex.Message + "，请联系管理员" });
             }
         }

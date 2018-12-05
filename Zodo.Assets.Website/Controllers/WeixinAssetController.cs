@@ -9,7 +9,7 @@ using Zodo.Assets.Website.Options;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    //[WeixinUserFiler]
+    [WeixinUserFiler]
     public class WeixinAssetController : WeixinWorkController
     {
         private AssetService service = new AssetService();

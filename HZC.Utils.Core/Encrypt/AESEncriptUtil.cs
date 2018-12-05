@@ -17,6 +17,11 @@ public class AESEncriptUtil
 
         using (var aesAlg = Aes.Create())
         {
+            if (aesAlg == null)
+            {
+                throw new Exception();
+            }
+
             using (var encryptor = aesAlg.CreateEncryptor(encryptKey, aesAlg.IV))
             {
                 using (var msEncrypt = new MemoryStream())
@@ -64,6 +69,11 @@ public class AESEncriptUtil
 
         using (var aesAlg = Aes.Create())
         {
+            if (aesAlg == null)
+            {
+                throw new Exception();
+            }
+
             using (var decryptor = aesAlg.CreateDecryptor(decryptKey, iv))
             {
                 string result;

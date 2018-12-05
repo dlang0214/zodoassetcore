@@ -39,8 +39,6 @@ namespace HZC.Database
         #endregion
 
         #region 构造方法
-        public MyEntityInfo()
-        { }
 
         public MyEntityInfo(Type type)
         {
@@ -114,7 +112,7 @@ namespace HZC.Database
         /// <returns></returns>
         private bool ValidPropertyType(PropertyInfo property)
         {
-            string name = "";
+            string name;
             if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 name = property.PropertyType.GetGenericArguments()[0].Name;
@@ -123,17 +121,13 @@ namespace HZC.Database
             {
                 name = property.PropertyType.Name;
             }
-            string[] types = new string[]
+            var types = new []
             {
                 "Int", "Int32", "Int64", "Float", "Decimal", "Long", "Boolean", "DateTime",
                 "String", "Double", "Char", "Single", "Byte", "UInt32", "UInt64", "Guid"
             };
 
-            if (types.Contains(name))
-            {
-                return true;
-            }
-            return false;
+            return types.Contains(name);
         }
 
         /// <summary>
@@ -143,19 +137,18 @@ namespace HZC.Database
         private string GetInsertSql()
         {
             var prefix = "@";
-            List<string> cols = new List<string>();
-            List<string> parameters = new List<string>();
+            var cols = new List<string>();
+            var parameters = new List<string>();
 
             foreach (var p in Properties)
             {
-                if (!p.Ignore && !p.InsertIgnore && !p.IsPrimaryKey)
-                {
-                    cols.Add(p.ColumnName);
-                    parameters.Add(prefix + p.Name);
-                }
+                if (p.Ignore || p.InsertIgnore || p.IsPrimaryKey) continue;
+
+                cols.Add(p.ColumnName);
+                parameters.Add(prefix + p.Name);
             }
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("INSERT INTO [" + TableName + "] (");
             sb.Append(string.Join(",", cols));
             sb.Append(") VALUES (");
@@ -170,17 +163,17 @@ namespace HZC.Database
         /// <returns></returns>
         private string GetUpdateSql()
         {
-            string prefix = "@";
-            List<string> clauses = new List<string>();
+            var prefix = "@";
+            var clauses = new List<string>();
 
-            string keyName = "";
-            string keyColumnName = "";
+            var keyName = "";
+            var keyColumnName = "";
 
             foreach (var p in Properties)
             {
                 if (!p.Ignore && !p.UpdateIgnore && !p.IsPrimaryKey)
                 {
-                    string clause = p.ColumnName + "=" + prefix + p.Name;
+                    var clause = p.ColumnName + "=" + prefix + p.Name;
                     clauses.Add(clause);
                 }
                 else if (p.IsPrimaryKey)
@@ -190,7 +183,7 @@ namespace HZC.Database
                 }
             }
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("UPDATE [" + TableName + "] SET ")
                 .Append(string.Join(",", clauses))
                 .Append(" WHERE ")

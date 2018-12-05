@@ -29,11 +29,11 @@ namespace Zodo.Assets.Application
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().OrderByDesc("CreateAt");
+            var util = MySearchUtil.New().OrderByDesc("CreateAt");
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "DeptName", "UserName", "Describe", "ServiceManId", "ServiceManName", "AssetCode" }, Key.Trim());
+                util.AndContains(new[] { "DeptName", "UserName", "Describe", "ServiceManId", "ServiceManName", "AssetCode" }, Key.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(AssetCode))

@@ -11,7 +11,7 @@ namespace Zodo.Assets.Website.Extensions
 {
     public class WeixinUserUtil2
     {
-        private CacheHelper _cacheHelper;
+        private readonly CacheHelper _cacheHelper;
 
         public WeixinUserUtil2(IDistributedCache cache)
         {
@@ -21,16 +21,12 @@ namespace Zodo.Assets.Website.Extensions
         public List<GetMemberResult> All()
         {
             var result = _cacheHelper.Get<List<GetMemberResult>>("WeixinUsers");
-            if (result == null)
-            {
-                return Init();
-            }
-            return result;
+            return result ?? Init();
         }
 
         public GetMemberResult Get(string id)
         {
-            return All().Where(d => d.userid == id).FirstOrDefault();
+            return All().FirstOrDefault(d => d.userid == id);
         }
 
         public void Reset()
@@ -48,7 +44,7 @@ namespace Zodo.Assets.Website.Extensions
             }
             else
             {
-                _cacheHelper.Set<List<GetMemberResult>>("WeixinUsers", result.userlist);
+                _cacheHelper.Set("WeixinUsers", result.userlist);
                 return result.userlist;
             }
         }

@@ -10,33 +10,31 @@ namespace Zodo.Assets.Application
 {
     public class DeptService
     {
-        private MyDbUtil db = new MyDbUtil();
+        private readonly MyDbUtil _db = new MyDbUtil();
 
         public Result<int> Create(Dept dept, IAppUser user)
         {
             try
             {
-                string error = Validate(dept);
+                var error = Validate(dept);
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                    return ResultUtil.Do(ResultCodes.验证失败, 0, error);
                 }
 
                 dept.BeforeCreate(user);
-                var id = db.Create<Dept>(dept);
-                if (id > 0)
+                var id = _db.Create(dept);
+                if (id <= 0)
                 {
-                    DeptUtil.Clear();
-                    return ResultUtil.Success<int>(id);
+                    return ResultUtil.Do(ResultCodes.数据库操作失败, 0, "数据写入失败");
                 }
-                else
-                {
-                    return ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0, "数据写入失败");
-                }
+
+                DeptUtil.Clear();
+                return ResultUtil.Success(id);
             }
             catch (Exception ex)
             {
-                return ResultUtil.Exception<int>(ex, 0);
+                return ResultUtil.Exception(ex, 0);
             }
         }
          
@@ -44,58 +42,49 @@ namespace Zodo.Assets.Application
         {
             try
             {
-                string error = Validate(dept);
+                var error = Validate(dept);
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    return ResultUtil.Do<int>(ResultCodes.验证失败, 0, error);
+                    return ResultUtil.Do(ResultCodes.验证失败, 0, error);
                 }
 
                 if (dept.ParentId == dept.Id)
                 {
-                    return ResultUtil.Do<int>(ResultCodes.验证失败, 0, "不能将自身设置为上级");
+                    return ResultUtil.Do(ResultCodes.验证失败, 0, "不能将自身设置为上级");
                 }
 
                 dept.BeforeUpdate(user);
-                var row = db.Update<Dept>(dept);
-                if (row > 0)
+                var row = _db.Update(dept);
+                if (row <= 0)
                 {
-                    DeptUtil.Clear();
-                    return ResultUtil.Success<int>(dept.Id);
+                    return ResultUtil.Do(ResultCodes.数据库操作失败, 0, "数据写入失败");
                 }
-                else
-                {
-                    return ResultUtil.Do<int>(ResultCodes.数据库操作失败, 0, "数据写入失败");
-                }
+
+                DeptUtil.Clear();
+                return ResultUtil.Success(dept.Id);
             }
             catch (Exception ex)
             {
-                return ResultUtil.Exception<int>(ex, 0);
+                return ResultUtil.Exception(ex, 0);
             }
         }
 
         public Result<int> Save(Dept dept, IAppUser user)
         {
-            if (dept.Id <= 0)
-            {
-                return Create(dept, user);
-            }
-            else
-            {
-                return Update(dept, user);
-            }
+            return dept.Id <= 0 ? Create(dept, user) : Update(dept, user);
         }
 
         public Result Delete(int id, IAppUser user)
         {
             try
             {
-                var entity = db.Load<Dept>(id);
+                var entity = _db.Load<Dept>(id);
                 if (entity == null)
                 {
                     return ResultUtil.Do(ResultCodes.数据不存在, "请求的数据不存在");
                 }
 
-                var childrenCount = db.GetCount<Dept>(MySearchUtil.New()
+                var childrenCount = _db.GetCount<Dept>(MySearchUtil.New()
                     .AndEqual("ParentId", id)
                     .AndEqual("IsDel", false));
                 if (childrenCount > 0)
@@ -103,7 +92,7 @@ namespace Zodo.Assets.Application
                     return ResultUtil.Do(ResultCodes.验证失败, "下属部门不为空，禁止删除");
                 }
 
-                var accountCount = db.GetCount<Account>(MySearchUtil.New()
+                var accountCount = _db.GetCount<Account>(MySearchUtil.New()
                     .AndEqual("DeptId", id)
                     .AndEqual("IsDel", false));
                 if (accountCount > 0)
@@ -111,7 +100,7 @@ namespace Zodo.Assets.Application
                     return ResultUtil.Do(ResultCodes.验证失败, "部门内员工不为空，禁止删除");
                 }
 
-                var row = db.Remove<Dept>(id);
+                var row = _db.Remove<Dept>(id);
                 if (row > 0)
                 {
                     DeptUtil.Clear();
@@ -130,8 +119,8 @@ namespace Zodo.Assets.Application
 
         public List<DeptDto> Fetch(DeptSearchParam input)
         {
-            MySearchUtil util = input.ToSearchUtil();
-            var all = db.Fetch<Dept>(util);
+            var util = input.ToSearchUtil();
+            var all = _db.Fetch<Dept>(util);
             return all.Select(a => new DeptDto
             {
                 Id = a.Id,
@@ -143,17 +132,12 @@ namespace Zodo.Assets.Application
 
         public Dept Load(int id)
         {
-            return db.Load<Dept>(id);
+            return _db.Load<Dept>(id);
         }
 
         private string Validate(Dept dept)
         {
-            if (string.IsNullOrWhiteSpace(dept.Name))
-            {
-                return "部门名称不能为空";
-            }
-
-            return string.Empty;
+            return string.IsNullOrWhiteSpace(dept.Name) ? "部门名称不能为空" : string.Empty;
         }
     }
 }

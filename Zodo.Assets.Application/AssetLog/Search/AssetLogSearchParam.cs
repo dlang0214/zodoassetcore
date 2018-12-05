@@ -3,7 +3,7 @@ using System;
 
 namespace Zodo.Assets.Application
 {
-    public partial class AssetLogSearchParam : ISearchParam
+    public class AssetLogSearchParam : ISearchParam
     {
         public string Key { get; set; }
 
@@ -21,21 +21,21 @@ namespace Zodo.Assets.Application
 
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().OrderByDesc("UpdateAt");
+            var util = MySearchUtil.New().OrderByDesc("UpdateAt");
 
             if (!string.IsNullOrWhiteSpace(Key))
             {
-                util.AndContains(new string[] { "AssetCode", "AssetName" }, Key.Trim());
+                util.AndContains(new[] { "AssetCode", "AssetName" }, Key.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(From))
             {
-                util.AndContains(new string[] { "FromAccountName", "FromDeptName" }, From.Trim());
+                util.AndContains(new[] { "FromAccountName", "FromDeptName" }, From.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(Target))
             {
-                util.AndContains(new string[] { "TargetAccountName", "TargetDeptName" }, Target.Trim());
+                util.AndContains(new[] { "TargetAccountName", "TargetDeptName" }, Target.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(Type))

@@ -10,7 +10,7 @@ namespace Zodo.Assets.Application
         
         public MySearchUtil ToSearchUtil()
         {
-            MySearchUtil util = MySearchUtil.New().AndEqual("IsDel", false);
+            var util = MySearchUtil.New().AndEqual("IsDel", false);
 
             if (!string.IsNullOrWhiteSpace(Key))
             {

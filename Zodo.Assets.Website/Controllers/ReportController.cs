@@ -10,7 +10,7 @@ using Zodo.Assets.Application;
 
 namespace Zodo.Assets.Website.Controllers
 {
-    public class ReportController : Controller
+    public class ReportController : MvcController
     {
         private AssetService service = new AssetService();
 
