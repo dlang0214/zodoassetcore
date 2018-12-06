@@ -12,7 +12,7 @@ namespace Zodo.Assets.Website.Controllers
     [WeixinUserFiler]
     public class WeixinAssetController : WeixinWorkController
     {
-        private AssetService service = new AssetService();
+        private readonly AssetService _service = new AssetService();
 
         public IActionResult Index()
         {
@@ -31,12 +31,12 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult Load(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return Json(ResultUtil.Do(ResultCodes.数据不存在, "请求的数据不存在"));
             }
-            return Json(ResultUtil.Success<AssetDto>(entity));
+            return Json(ResultUtil.Success(entity));
         }
     }
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using Zodo.Assets.Application;
 using Zodo.Assets.Core;
 
@@ -10,7 +9,7 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class AppUserController : MvcController
     {
-        private UserService service = new UserService();
+        private readonly UserService _service = new UserService();
 
         #region 首页
         public ActionResult Index()
@@ -20,8 +19,8 @@ namespace Zodo.Assets.Website.Controllers
 
         public ActionResult Get(UserSearchParam param)
         {
-            var users = service.Fetch(param);
-            return Json(ResultUtil.Success<List<AppUserDto>>(users));
+            var users = _service.Fetch(param);
+            return Json(ResultUtil.Success(users));
         }
         #endregion
 
@@ -35,7 +34,7 @@ namespace Zodo.Assets.Website.Controllers
             }
             else
             {
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
@@ -50,9 +49,9 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                User entity = new User();
+                var entity = new User();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
 
                 return Json(result);
             }
@@ -70,7 +69,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var result = service.Delete(id);
+                var result = _service.Delete(id);
                 return Json(result);
             }
             catch (Exception ex)
@@ -87,7 +86,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var result = service.ResetPw(id, AppUser);
+                var result = _service.ResetPw(id, AppUser);
                 return Json(result);
             }
             catch (Exception ex)

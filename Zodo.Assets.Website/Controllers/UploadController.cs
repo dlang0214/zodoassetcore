@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Zodo.Assets.Website.Controllers
@@ -35,20 +34,20 @@ namespace Zodo.Assets.Website.Controllers
 
             var file = files[0];
 
-            string webRootPath = _hostingEnvironment.WebRootPath;
+            var webRootPath = _hostingEnvironment.WebRootPath;
             //string contentRootPath = _hostingEnvironment.ContentRootPath;
 
-            string fileExt = GetFileExt(file.FileName);
-            string newFileName = Guid.NewGuid().ToString() + "." + fileExt;
-            string folderName = DateTime.Today.ToString("yyyyMM");
-            string newFolderName = Path.Combine(webRootPath, "upload", folderName);
+            var fileExt = GetFileExt(file.FileName);
+            var newFileName = $"{Guid.NewGuid()}.{fileExt}";
+            var folderName = DateTime.Today.ToString("yyyyMM");
+            var newFolderName = Path.Combine(webRootPath, "upload", folderName);
 
             if (!Directory.Exists(newFolderName))
             {
                 Directory.CreateDirectory(newFolderName);
             }
 
-            string relationPath = Path.Combine("upload", folderName, newFileName);
+            var relationPath = Path.Combine("upload", folderName, newFileName);
 
             var filePath = Path.Combine(webRootPath, relationPath);
 
@@ -74,8 +73,8 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var match = Regex.Match(image, "data:image/([a-zA-Z]+);base64,([\\w\\W]*)$");
-                var ext = "jpg";
+                //var match = Regex.Match(image, "data:image/([a-zA-Z]+);base64,([\\w\\W]*)$");
+                const string ext = "jpg";
                 //if (match.Success)
                 //{
                 //    image = match.Groups[2].Value;
@@ -89,14 +88,14 @@ namespace Zodo.Assets.Website.Controllers
                 var arr = Convert.FromBase64String(image);
 
                 var fileName = DateTime.Now.ToString("yyyyMMddHHmmssffff") + "." + ext;
-                var rootPath = $"{Directory.GetCurrentDirectory()}//wwwroot//upload//{DateTime.Today.ToString("yyyyMM")}";
+                var rootPath = $"{Directory.GetCurrentDirectory()}//wwwroot//upload//{DateTime.Today:yyyyMM}";
 
                 if (!Directory.Exists(rootPath))
                 {
                     Directory.CreateDirectory(rootPath);
                 }
                 System.IO.File.WriteAllBytes($"{rootPath}//{fileName}", arr);
-                return Json(ResultUtil.Success<string>($"/upload/{DateTime.Today.ToString("yyyyMM")}/{fileName}"));
+                return Json(ResultUtil.Success<string>($"/upload/{DateTime.Today:yyyyMM}/{fileName}"));
             }
             catch (Exception ex)
             {

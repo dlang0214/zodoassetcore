@@ -9,19 +9,19 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class AccountController : MvcController
     {
-        private AccountService service = new AccountService();
+        private readonly AccountService _service = new AccountService();
 
         #region 首页
         public ActionResult Index()
         {
-            InitUI();
+            InitUi();
             return View();
         }
 
         public ActionResult Get(AccountSearchParam param, int pageIndex, int pageSize)
         {
-            var accounts = service.PageList(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<AccountListDto>(accounts));
+            var accounts = _service.PageList(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(accounts));
         }
         #endregion
 
@@ -35,13 +35,13 @@ namespace Zodo.Assets.Website.Controllers
             }
             else
             {
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
                 }
             }
-            InitUI();
+            InitUi();
             return View(entity);
         }
 
@@ -51,9 +51,9 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                Account entity = new Account();
+                var entity = new Account();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
 
                 return Json(result);
             }
@@ -71,7 +71,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var result = service.Delete(id);
+                var result = _service.Delete(id);
                 return Json(result);
             }
             catch (Exception ex)
@@ -82,7 +82,7 @@ namespace Zodo.Assets.Website.Controllers
         #endregion
 
         #region 私有方法
-        private void InitUI()
+        private void InitUi()
         {
             var depts = DeptUtil.GetSelectList();
             var list = depts.ToSelectList("Id", "Name");
@@ -93,7 +93,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 资源列表
         public ActionResult Assets(int id)
         {
-            var account = service.Load(id);
+            var account = _service.Load(id);
             if (account == null)
             {
                 return new EmptyResult();
@@ -101,11 +101,9 @@ namespace Zodo.Assets.Website.Controllers
 
             ViewBag.AccountName = account.Name;
 
-            var param = new AssetSearchParam();
-            param.AccountId = id;
+            var param = new AssetSearchParam {AccountId = id};
 
-            var assetService = new AssetService();
-            var assets = assetService.ListDto(param);
+            var assets = new AssetService().ListDto(param);
             return View(assets);
         }
         #endregion

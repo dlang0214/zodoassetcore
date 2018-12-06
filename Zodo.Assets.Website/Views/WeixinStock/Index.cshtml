@@ -1,4 +1,4 @@
-﻿@model List<Zodo.Assets.Core.Stock>
+﻿@model IEnumerable<Zodo.Assets.Core.Stock>
 @{
     Layout = null;
 }
@@ -22,7 +22,7 @@
         <div id="list" class="weui-panel__bd">
             @foreach (var stock in Model)
             {
-            <a href="/WeixinStock/Details/@stock.Id" class="weui-panel weui-panel_accessweui-media-box weui-media-box_text">
+            <a href="/WeixinStock/Details/@stock.Id" class="weui-panel weui-panel_access weui-media-box weui-media-box_text">
                 <div class="weui-media-box weui-media-box_text">
                     <h4 class="weui-media-box__title" style="color: #333;">@stock.Title</h4>
                     <p class="weui-media-box__desc">@stock.Remark</p>

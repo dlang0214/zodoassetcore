@@ -8,20 +8,18 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class MaintainController : MvcController
     {
-        private MaintainService service = new MaintainService();
+        private readonly MaintainService _service = new MaintainService();
 
         #region 列表页
         public ActionResult Index()
         {
-            InitUI();
-
             return View();
         }
 
         public JsonResult Get(MaintainSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var list = service.PageListDto(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<MaintainDto>(list));
+            var list = _service.PageListDto(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(list));
 
             // var list = service.ListDto(param);
             // return MyJson(ResultUtil.Success<List<MaintainDto>>(list), JsonRequestBehavior.AllowGet);
@@ -31,7 +29,6 @@ namespace Zodo.Assets.Website.Controllers
         #region 创建
         public ActionResult Create()
         {
-            InitUI();
             return View();
         }
 
@@ -39,10 +36,10 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Create(IFormCollection collection)
         {
-            Maintain entity = new Maintain();
+            var entity = new Maintain();
             TryUpdateModelAsync(entity);
 
-            var result =  service.Create2(entity, AppUser);
+            var result =  _service.Create2(entity, AppUser);
             // 如果有缓存，注意在这里要清空缓存
 
             return Json(result);
@@ -52,25 +49,22 @@ namespace Zodo.Assets.Website.Controllers
         #region 修改
         public ActionResult Edit(int id)
         {
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
             }
-            else
-            {
-                InitUI();
-                return View(entity);
-            }
+            
+            return View(entity);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public JsonResult Edit(IFormCollection collection)
         {
-            Maintain entity = new Maintain();
+            var entity = new Maintain();
             TryUpdateModelAsync(entity);
-            var result = service.Update(entity, AppUser);
+            var result = _service.Update(entity, AppUser);
             // 如果有缓存，注意在这里要清空缓存
 
             return Json(result);
@@ -82,17 +76,11 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Delete(int id)
         {
-            var entity = service.Load(id);
-            var result =  service.Delete(entity, AppUser);
+            var entity = _service.Load(id);
+            var result =  _service.Delete(entity, AppUser);
             // 如果有缓存，注意在这里要清空缓存
 
             return Json(result);
-        }
-        #endregion
-
-        #region 辅助方法
-        private void InitUI()
-        {
         }
         #endregion
     }

@@ -14,7 +14,7 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class ServiceApplicationController : MvcController
     {
-        private ServiceApplyService service = new ServiceApplyService();
+        private readonly ServiceApplyService _service = new ServiceApplyService();
 
         #region 首页
         public IActionResult Index()
@@ -26,45 +26,38 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult Get(ServiceApplySearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var pageList = service.PageList(pageIndex, pageSize, param);
-            return Json(ResultUtil.PageList<ServiceApply>(pageList));
+            var pageList = _service.PageList(pageIndex, pageSize, param);
+            return Json(ResultUtil.PageList(pageList));
         }
         #endregion
 
         public IActionResult Export(ServiceApplySearchParam param)
         {
-            var list = service.Fetch(param);
+            var list = _service.Fetch(param);
             var path = SaveExcel(list, "服务申请记录");
             return Redirect(path);
         }
 
         #region 私有方法
-        private void InitUI()
-        {
-            var depts = DeptUtil.GetSelectList();
-            var list = depts.ToSelectList("Id", "Name");
-            ViewBag.Parents = list;
-        }
 
-        private string SaveExcel(List<ServiceApply> groups, string name)
+        private string SaveExcel(IReadOnlyCollection<ServiceApply> groups, string name)
         {
-            string folderName = DateTime.Today.ToString("yyyyMM");
-            string fileName = (string.IsNullOrWhiteSpace(name) ? Guid.NewGuid().ToString("N") : name) + ".xlsx";
-            string baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
+            var fileName = (string.IsNullOrWhiteSpace(name) ? Guid.NewGuid().ToString("N") : name) + ".xlsx";
+            var baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
             if (!Directory.Exists(baseFolderName))
             {
                 Directory.CreateDirectory(baseFolderName);
             }
-            string savePath = $"{baseFolderName}//{fileName}";
+            var savePath = $"{baseFolderName}//{fileName}";
 
             if (System.IO.File.Exists(savePath))
             {
                 System.IO.File.Delete(savePath);
             }
 
-            using (ExcelPackage package = new ExcelPackage(new System.IO.FileInfo(savePath)))
+            using (var package = new ExcelPackage(new FileInfo(savePath)))
             {
-                ExcelWorksheet workSheet = package.Workbook.Worksheets.Add("sheet1");
+                var workSheet = package.Workbook.Worksheets.Add("sheet1");
                 workSheet.Cells.Style.Font.Name = "microsoft yahei";
                 workSheet.Cells.Style.Font.Size = 9;
                 workSheet.Cells.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
@@ -81,7 +74,7 @@ namespace Zodo.Assets.Website.Controllers
                 workSheet.Column(12).Width = 16;
                 workSheet.Column(13).Width = 16;
 
-                int rowIndex = 1;
+                var rowIndex = 1;
 
                 workSheet.Cells[rowIndex, 1].Value = "服务申请记录";       // 标题文本
                 workSheet.Cells[rowIndex, 1].Style.Font.Bold = true;        // 标题文字加粗
@@ -116,7 +109,7 @@ namespace Zodo.Assets.Website.Controllers
                 workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                 workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                 workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                 workSheet.Row(rowIndex).Height = 24;
 
@@ -145,7 +138,7 @@ namespace Zodo.Assets.Website.Controllers
                         workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                         workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                         workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                        workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                        workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                         workSheet.Row(rowIndex).Height = 20;
                         rowIndex++;

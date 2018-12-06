@@ -30,7 +30,7 @@ namespace Zodo.Assets.Website.Controllers
         [HttpGet]
         public Result GetAssetByCode(string code)
         {
-            AssetService service = new AssetService();
+            var service = new AssetService();
             var asset = service.LoadDto(code);
             return asset == null ? ResultUtil.Do(ResultCodes.数据不存在) : ResultUtil.Success<AssetDto>(asset);
         }

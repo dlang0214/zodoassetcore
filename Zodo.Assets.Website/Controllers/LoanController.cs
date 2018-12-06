@@ -9,43 +9,27 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class LoanController : MvcController
     {
-        private LoanService service = new LoanService();
+        private readonly LoanService _service = new LoanService();
 
         #region 列表页
         public ActionResult Index()
         {
-            InitUI();
             return View();
         }
 
         public JsonResult Get(LoanSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var list = service.PageListDto(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<LoanDto>(list));
+            var list = _service.PageListDto(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(list));
 
             // var list = service.ListDto(param);
             // return MyJson(ResultUtil.Success<List<LoanDto>>(list), JsonRequestBehavior.AllowGet);
         }
         #endregion
 
-        #region 逾期未归还
-        public ActionResult Late()
-        {
-            InitUI();
-            return View();
-        }
-
-        public JsonResult GetLate(LoanSearchParam param, int pageIndex = 1, int pageSize = 20)
-        {
-            var list = service.PageListDto(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<LoanDto>(list));
-        }
-        #endregion
-
         #region 创建
         public ActionResult Create()
         {
-            InitUI();
             return View();
         }
 
@@ -53,10 +37,10 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Create(IFormCollection collection)
         {
-            Loan entity = new Loan();
+            var entity = new Loan();
             TryUpdateModelAsync(entity);
 
-            var result =  service.Create(entity, AppUser);
+            var result =  _service.Create(entity, AppUser);
             return Json(result);
         }
         #endregion
@@ -64,7 +48,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 归还
         public ActionResult Return(int id)
         {
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -80,7 +64,12 @@ namespace Zodo.Assets.Website.Controllers
             var entity = new Loan();
             TryUpdateModelAsync(entity);
 
-            AssetService aService = new AssetService();
+            if (!entity.ReturnAt.HasValue)
+            {
+                return Json(ResultUtil.Do(ResultCodes.验证失败, "归还日期不能为空"));
+            }
+
+            var aService = new AssetService();
             var result = aService.Return(entity.Id, (DateTime)entity.ReturnAt, AppUser);
             return Json(result);
         }
@@ -89,12 +78,8 @@ namespace Zodo.Assets.Website.Controllers
         #region 详情
         public IActionResult Details(int id)
         {
-            var entity = service.Load(id);
-            if (entity == null)
-            {
-                return new EmptyResult();
-            }
-            return View(entity);
+            var entity = _service.Load(id);
+            return entity == null ? new EmptyResult() : (IActionResult)View(entity);
         }
         #endregion
 
@@ -106,17 +91,10 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult GetOvervue(int pageIndex = 1, int pageSize = 20)
         {
-            var param = new LoanSearchParam();
-            param.State = 3;
+            var param = new LoanSearchParam {State = 3};
 
-            var list = service.PageListDto(param);
-            return Json(ResultUtil.PageList<LoanDto>(list));
-        }
-        #endregion
-
-        #region 辅助方法
-        private void InitUI()
-        {
+            var list = _service.PageListDto(param);
+            return Json(ResultUtil.PageList(list));
         }
         #endregion
     }

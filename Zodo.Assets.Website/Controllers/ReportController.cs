@@ -12,18 +12,18 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class ReportController : MvcController
     {
-        private AssetService service = new AssetService();
+        private readonly AssetService _service = new AssetService();
 
         #region 状态报表
         public IActionResult States(AssetSearchParam param)
         {
-            var list = service.GetStateGroup(param);
+            var list = _service.GetStateGroup(param);
             return View("States", list);
         }
 
         public ActionResult ExportStates(AssetSearchParam param)
         {
-            var list = service.GetStateGroup(param);
+            var list = _service.GetStateGroup(param);
             var path = GetDetails(list, "资产状态清单");
             return Redirect(path);
         }
@@ -32,13 +32,13 @@ namespace Zodo.Assets.Website.Controllers
         #region 健康度报表
         public IActionResult Healthy(AssetSearchParam param)
         {
-            var list = service.GetHealthyGroup(param);
+            var list = _service.GetHealthyGroup(param);
             return View("Healthy", list);
         }
 
         public ActionResult ExportHealthy(AssetSearchParam param)
         {
-            var list = service.GetHealthyGroup(param);
+            var list = _service.GetHealthyGroup(param);
             var path = GetDetails(list, "资产健康度清单");
             return Redirect(path);
         }
@@ -47,13 +47,13 @@ namespace Zodo.Assets.Website.Controllers
         #region 部门报表
         public IActionResult Depts(AssetSearchParam param)
         {
-            var list = service.GetDeptGroup(param);
+            var list = _service.GetDeptGroup(param);
             return View("Depts", list);
         }
 
         public ActionResult ExportDepts(AssetSearchParam param)
         {
-            var list = service.GetDeptGroup(param);
+            var list = _service.GetDeptGroup(param);
             var path = GetDetails(list, "部门资产清单");
             return Redirect(path);
         }
@@ -62,13 +62,13 @@ namespace Zodo.Assets.Website.Controllers
         #region 员工报表
         public IActionResult Accounts(AssetSearchParam param)
         {
-            var list = service.GetAccountGroup(param);
+            var list = _service.GetAccountGroup(param);
             return View("Accounts", list);
         }
 
         public ActionResult ExportAccounts(AssetSearchParam param)
         {
-            var list = service.GetAccountGroup(param);
+            var list = _service.GetAccountGroup(param);
             var path = GetDetails(list, "员工资产清单");
             return Redirect(path);
         }
@@ -77,13 +77,13 @@ namespace Zodo.Assets.Website.Controllers
         #region 资产类别清单
         public IActionResult Cates(AssetSearchParam param)
         {
-            var list = service.GetCateGroup(param);
+            var list = _service.GetCateGroup(param);
             return View(list);
         }
 
         public ActionResult ExportCates(AssetSearchParam param)
         {
-            var list = service.GetCateGroup(param);
+            var list = _service.GetCateGroup(param);
             var path = GetDetails(list, "资产分类清单");
             return Redirect(path);
         }
@@ -92,23 +92,22 @@ namespace Zodo.Assets.Website.Controllers
         #region 生成清单excel
         private string GetDetails(List<AssetGroupDto> groups, string name = "")
         {
-            string folderName = DateTime.Today.ToString("yyyyMM");
-            string fileName = (string.IsNullOrWhiteSpace(name) ? Guid.NewGuid().ToString("N") : name) + ".xlsx";
-            string baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
+            var fileName = (string.IsNullOrWhiteSpace(name) ? Guid.NewGuid().ToString("N") : name) + ".xlsx";
+            var baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
             if (!Directory.Exists(baseFolderName))
             {
                 Directory.CreateDirectory(baseFolderName);
             }
-            string savePath = $"{baseFolderName}//{fileName}";
+            var savePath = $"{baseFolderName}//{fileName}";
 
             if (System.IO.File.Exists(savePath))
             {
                 System.IO.File.Delete(savePath);
             }
 
-            using (ExcelPackage package = new ExcelPackage(new System.IO.FileInfo(savePath)))
+            using (var package = new ExcelPackage(new FileInfo(savePath)))
             {
-                ExcelWorksheet workSheet = package.Workbook.Worksheets.Add("sheet1");
+                var workSheet = package.Workbook.Worksheets.Add("sheet1");
                 workSheet.Cells.Style.Font.Name = "microsoft yahei";
                 workSheet.Cells.Style.Font.Size = 9;
                 workSheet.Cells.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
@@ -126,7 +125,7 @@ namespace Zodo.Assets.Website.Controllers
                 workSheet.Column(13).Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
 
 
-                int rowIndex = 1;
+                var rowIndex = 1;
                 foreach (var group in groups)
                 {
                     workSheet.Cells[rowIndex, 1].Value = group.GroupName;       // 标题文本
@@ -161,7 +160,7 @@ namespace Zodo.Assets.Website.Controllers
                     workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                     workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                     workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                    workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                    workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                     workSheet.Row(rowIndex).Height = 24;
 
@@ -191,7 +190,7 @@ namespace Zodo.Assets.Website.Controllers
                             workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                             workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                             workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                            workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                            workSheet.Cells[rowIndex, 1, rowIndex, 13].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                             workSheet.Row(rowIndex).Height = 20;
                             rowIndex++;

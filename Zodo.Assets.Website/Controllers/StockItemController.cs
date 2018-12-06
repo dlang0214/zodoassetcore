@@ -1,6 +1,5 @@
 ﻿using HZC.Database;
 using HZC.Infrastructure;
-using HZC.SearchUtil;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OfficeOpenXml;
@@ -21,37 +20,33 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class StockItemController : MvcController
     {
-        private StockService stockService = new StockService();
-        private StockItemService service = new StockItemService();
+        private readonly StockService _stockService = new StockService();
+        private readonly StockItemService _service = new StockItemService();
 
         #region 首页
         public IActionResult Index(int id)
         {
-            var entity = stockService.Load(id);
+            var entity = _stockService.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
             }
 
             InitDepts();
-            if (entity.IsFinish)
-            {
-                return View(entity);
-            }
             return View(entity);
         }
 
         public ActionResult Get(StockItemSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var items = stockService.PageListItems(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<StockItem>(items));
+            var items = _stockService.PageListItems(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(items));
         }
         #endregion
 
         #region 详情
         public ActionResult Details(int id)
         {
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -70,7 +65,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Stock(int id, int checkResult, string remark)
         {
-            var result = service.Check(id, checkResult, 2, AppUser.Name, remark);
+            var result = _service.Check(id, checkResult, 2, AppUser.Name, remark);
             return Json(result);
         }
         #endregion
@@ -92,8 +87,7 @@ namespace Zodo.Assets.Website.Controllers
         /// <returns></returns>
         public IActionResult Select(int id)
         {
-            var stockService = new StockService();
-            var stock = stockService.Load(id);
+            var stock = new StockService().Load(id);
 
             if (stock == null || stock.IsFinish || stock.IsDel)
             {
@@ -107,19 +101,19 @@ namespace Zodo.Assets.Website.Controllers
             ViewBag.Healthy = AssetParameters.Healthy.ToSelectList();
             // 分类
             var cates = AssetCateUtil.All();
-            List<SelectListItem> cateItems = new List<SelectListItem>();
+            var cateItems = new List<SelectListItem>();
             foreach (var c in cates)
             {
-                cateItems.Add(new SelectListItem { Text = showName(c.Name, c.Level), Value = c.Id.ToString() });
+                cateItems.Add(new SelectListItem { Text = ShowName(c.Name, c.Level), Value = c.Id.ToString() });
             }
             ViewBag.Cates = cateItems;
 
-            string showName(string txt, int level)
+            string ShowName(string txt, int level)
             {
-                string str = "";
+                var str = "";
                 if (level > 1)
                 {
-                    for (int i = 0; i < level; i++)
+                    for (var i = 0; i < level; i++)
                     {
                         str += HttpUtility.HtmlDecode("&nbsp;&nbsp;");
                     }
@@ -138,12 +132,12 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult GetAssets(AssetSearchParam param, int stockId, int pageIndex = 1, int pageSize = 50)
         {
-            MySearchUtil util = param.ToSearchUtil();
+            var util = param.ToSearchUtil();
             util.And("Id NOT IN (SELECT AssetId FROM Asset_StockItem WHERE StockId=" + stockId.ToString() + ")");
 
             var db = new MyDbUtil();
             var list = db.Query<AssetDto>(util, pageIndex, pageSize, "AssetView");
-            return Json(ResultUtil.PageList<AssetDto>(list));
+            return Json(ResultUtil.PageList(list));
         }
         #endregion
 
@@ -163,32 +157,33 @@ namespace Zodo.Assets.Website.Controllers
             {
                 return Content("无效访问");
             }
-            var param = new StockItemSearchParam();
-            param.StockId = id;
-            var list = service.FetchDto(param);
+            var param = new StockItemSearchParam
+            {
+                StockId = id
+            };
+            var list = _service.FetchDto(param);
             return Redirect(SaveExcel(list, "盘点明细", title));
         }
 
         private string SaveExcel(IEnumerable<StockItemDto> groups, string fileName, string stockName)
         {
-            string folderName = DateTime.Today.ToString("yyyyMM");
             fileName = (string.IsNullOrWhiteSpace(fileName) ? Guid.NewGuid().ToString("N") : fileName) + ".xlsx";
             fileName = stockName + "-" + fileName;
-            string baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
+            var baseFolderName = $"{Directory.GetCurrentDirectory()}//wwwroot//report";
             if (!Directory.Exists(baseFolderName))
             {
                 Directory.CreateDirectory(baseFolderName);
             }
-            string savePath = $"{baseFolderName}//{fileName}";
+            var savePath = $"{baseFolderName}//{fileName}";
 
             if (System.IO.File.Exists(savePath))
             {
                 System.IO.File.Delete(savePath);
             }
 
-            using (ExcelPackage package = new ExcelPackage(new System.IO.FileInfo(savePath)))
+            using (var package = new ExcelPackage(new FileInfo(savePath)))
             {
-                ExcelWorksheet workSheet = package.Workbook.Worksheets.Add("sheet1");
+                var workSheet = package.Workbook.Worksheets.Add("sheet1");
                 workSheet.Cells.Style.Font.Name = "microsoft yahei";
                 workSheet.Cells.Style.Font.Size = 9;
                 workSheet.Cells.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
@@ -209,7 +204,7 @@ namespace Zodo.Assets.Website.Controllers
                 workSheet.Column(15).Width = 16;
                 workSheet.Column(16).Width = 16;
 
-                int rowIndex = 1;
+                var rowIndex = 1;
 
                 workSheet.Cells[rowIndex, 1].Value = "盘点明细";       // 标题文本
                 workSheet.Cells[rowIndex, 1].Style.Font.Bold = true;        // 标题文字加粗
@@ -247,15 +242,16 @@ namespace Zodo.Assets.Website.Controllers
                 workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                 workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                 workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                 workSheet.Row(rowIndex).Height = 24;
 
                 rowIndex++;
 
-                if (groups.Count() > 0)
+                var stockItemDtos = groups.ToList();
+                if (stockItemDtos.Any())
                 {
-                    foreach (var item in groups)
+                    foreach (var item in stockItemDtos)
                     {
                         var checkMethod = "";
                         if (item.CheckMethod == 1)
@@ -303,7 +299,7 @@ namespace Zodo.Assets.Website.Controllers
                         workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Right.Style = ExcelBorderStyle.Thin;
                         workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Top.Style = ExcelBorderStyle.Thin;
                         workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                        workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin, Color.Black);
+                        workSheet.Cells[rowIndex, 1, rowIndex, 16].Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.Black);
 
                         workSheet.Row(rowIndex).Height = 20;
                         rowIndex++;

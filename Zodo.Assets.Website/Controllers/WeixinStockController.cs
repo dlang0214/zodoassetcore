@@ -15,8 +15,8 @@ namespace Zodo.Assets.Website.Controllers
     [WeixinUserFiler]
     public class WeixinStockController : WeixinWorkController
     {
-        private StockItemService service = new StockItemService();
-        private MyDbUtil db = new MyDbUtil();
+        private readonly StockItemService _service = new StockItemService();
+        private readonly MyDbUtil _db = new MyDbUtil();
 
         #region 首页
         /// <summary>
@@ -25,8 +25,8 @@ namespace Zodo.Assets.Website.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            string sql = "SELECT * FROM Asset_Stock WHERE IsDel=0 AND IsFinish=0";
-            var stock = db.FetchBySql<Stock>(sql);
+            const string sql = "SELECT * FROM Asset_Stock WHERE IsDel=0 AND IsFinish=0";
+            var stock = _db.FetchBySql<Stock>(sql);
             return View(stock);
         }
         #endregion
@@ -39,7 +39,7 @@ namespace Zodo.Assets.Website.Controllers
         /// <returns></returns>
         public IActionResult Details(int id)
         {
-            var entity = db.Load<Stock>(id);
+            var entity = _db.Load<Stock>(id);
             if (entity == null)
             {
                 return RedirectToAction("Error", new { title = "403", message = "您无权查看此数据" });
@@ -84,7 +84,7 @@ namespace Zodo.Assets.Website.Controllers
         /// <returns></returns>
         public JsonResult Load(int id, int stockId)
         {
-            var result = service.LoadDto(id, stockId);
+            var result = _service.LoadDto(id, stockId);
             return Json(result);
         }
 
@@ -93,6 +93,7 @@ namespace Zodo.Assets.Website.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="result"></param>
+        /// <param name="remark"></param>
         /// <returns></returns>
         [HttpPost]
         public JsonResult Check(int id, int result, string remark)
@@ -101,7 +102,7 @@ namespace Zodo.Assets.Website.Controllers
             {
                 return Json(ResultUtil.Do(ResultCodes.验证失败, "无效的盘点结果"));
             }
-            var r = service.Check(id, result, 1, WxUser.UserName, remark);
+            var r = _service.Check(id, result, 1, WxUser.UserName, remark);
             return Json(r);
         }
 
@@ -117,7 +118,7 @@ namespace Zodo.Assets.Website.Controllers
                 .AndNotNullOrEmpty("CheckAt")
                 .OrderByDesc("CheckAt");
 
-            var list = db.Fetch(util, "Asset_StockItem", "DeptName,AccountName,AssetName,AssetCode,Checkor,CheckAt", count);
+            var list = _db.Fetch(util, "Asset_StockItem", "DeptName,AccountName,AssetName,AssetCode,Checkor,CheckAt", count);
             return Json(list);
         }
         #endregion

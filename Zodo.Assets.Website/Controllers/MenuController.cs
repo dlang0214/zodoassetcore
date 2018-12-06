@@ -19,12 +19,12 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class MenuController : MvcController
     {
-        private MenuService service = new MenuService();
-        private JwtSettings setting;
+        private readonly MenuService _service = new MenuService();
+        private readonly JwtSettings _setting;
 
         public MenuController(IOptions<JwtSettings> option)
         {
-            setting = option.Value;
+            _setting = option.Value;
         }
 
         #region 首页
@@ -36,7 +36,7 @@ namespace Zodo.Assets.Website.Controllers
         public JsonResult Get()
         {
             var menus = MenuUtil.All();
-            return Json(ResultUtil.Success<List<MenuDto>>(menus));
+            return Json(ResultUtil.Success(menus));
         }
         #endregion
 
@@ -50,13 +50,13 @@ namespace Zodo.Assets.Website.Controllers
             }
             else
             {
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
                 }
             }
-            InitUI();
+            InitUi();
             return View(entity);
         }
 
@@ -66,9 +66,9 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                Menu entity = new Menu();
+                var entity = new Menu();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
                 if (result.Code == 200)
                 {
                     MenuUtil.Clear();
@@ -89,8 +89,8 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                var entity = service.Load(id);
-                var result = service.Delete(entity, AppUser);
+                var entity = _service.Load(id);
+                var result = _service.Delete(entity, AppUser);
                 if(result.Code == 200)
                 {
                     MenuUtil.Clear();
@@ -114,22 +114,22 @@ namespace Zodo.Assets.Website.Controllers
         #endregion
 
         #region 私有方法
-        private void InitUI()
+        private void InitUi()
         {
             var menus = MenuUtil.All();
-            List<SelectListItem> listItems = new List<SelectListItem>();
+            var listItems = new List<SelectListItem>();
             foreach (var d in menus)
             {
-                listItems.Add(new SelectListItem { Text = showName(d.Name, d.Level), Value = d.Id.ToString() });
+                listItems.Add(new SelectListItem { Text = ShowName(d.Name, d.Level), Value = d.Id.ToString() });
             }
             ViewBag.Parents = listItems;
 
-            string showName(string txt, int level)
+            string ShowName(string txt, int level)
             {
-                string str = "";
+                var str = "";
                 if (level > 1)
                 {
-                    for (int i = 0; i < level; i++)
+                    for (var i = 0; i < level; i++)
                     {
                         str += HttpUtility.HtmlDecode("&nbsp;&nbsp;");
                     }
@@ -149,17 +149,17 @@ namespace Zodo.Assets.Website.Controllers
         public ActionResult Login()
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(setting.SecretKey);
+            var key = Encoding.UTF8.GetBytes(_setting.SecretKey);
             var authTime = DateTime.UtcNow;
             var expiresAt = authTime.AddMinutes(5);
 
-            var claims = new Claim[]
+            var claims = new[]
             {
                 new Claim(JwtClaimTypes.Role, "admin"),
                 new Claim(JwtClaimTypes.Name, "admin"),
                 new Claim(JwtClaimTypes.Id, "4546545646"),
-                new Claim(JwtClaimTypes.Audience, setting.Audience),
-                new Claim(JwtClaimTypes.Issuer, setting.Issuer)
+                new Claim(JwtClaimTypes.Audience, _setting.Audience),
+                new Claim(JwtClaimTypes.Issuer, _setting.Issuer)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

@@ -6,19 +6,18 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class AssetLogController : MvcController
     {
-        private AssetLogService service = new AssetLogService();
+        private readonly AssetLogService _service = new AssetLogService();
 
         #region 列表页
         public ActionResult Index()
         {
-            InitUI();
             return View();
         }
 
         public JsonResult Get(AssetLogSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var list = service.PageListDto(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<AssetLogDto>(list));
+            var list = _service.PageListDto(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(list));
 
             // var list = service.ListDto(param);
             // return MyJson(ResultUtil.Success<List<AssetLogDto>>(list), JsonRequestBehavior.AllowGet);
@@ -28,19 +27,13 @@ namespace Zodo.Assets.Website.Controllers
         #region 详情
         public IActionResult Details(int id)
         {
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
             }
-            else
-            {
-                if (entity.Type == "回收")
-                {
-                    return View("Details_Recovery", entity);
-                }
-                return View(entity);
-            }
+
+            return entity.Type == "回收" ? View("Details_Recovery", entity) : View(entity);
         }
         #endregion
 
@@ -48,12 +41,6 @@ namespace Zodo.Assets.Website.Controllers
         public IActionResult Create()
         {
             return View();
-        }
-        #endregion
-
-        #region 辅助方法
-        private void InitUI()
-        {
         }
         #endregion
     }

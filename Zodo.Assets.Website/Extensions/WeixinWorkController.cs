@@ -12,11 +12,13 @@ namespace Zodo.Assets.Website.Extensions
                 var user = HttpContext.Session.Get<WeixinUser>("WeixinUser");
                 if (user == null)
                 {
-                    var u = new WeixinUser();
-                    u.UserId = User.GetWeixinUserId();
-                    u.UserName = User.GetWeixinUserName();
-                    u.DeptId = User.GetWeixinDeptId();
-                    u.DeptName = User.GetWeixinDeptName();
+                    var u = new WeixinUser
+                    {
+                        UserId = User.GetWeixinUserId(),
+                        UserName = User.GetWeixinUserName(),
+                        DeptId = User.GetWeixinDeptId(),
+                        DeptName = User.GetWeixinDeptName()
+                    };
 
                     HttpContext.Session.Set("WeixinUser", u);
                     return u;

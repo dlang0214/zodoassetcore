@@ -167,7 +167,7 @@
                 },
                 error: function (res) {
                     if (res.errMsg.indexOf('function_not_exist') > 0) {
-                        alert('版本过低请升级')
+                        alert('版本过低请升级');
                     }
                 }
             });
@@ -176,10 +176,10 @@
         function scan(id) {
             $.get('/WeixinAsset/Load', { id: id }, function (response) {
                 if (response.code === 200) {
-                    $('#assetCode').html(response.body.assetCode);
+                    $('#assetCode').html(response.body.code);
                     $('#financialCode').html(response.body.financialCode);
                     $('#assetCate').html(response.body.assetCate);
-                    $('#assetName').html(response.body.assetName);
+                    $('#assetName').html(response.body.name);
                     $('#band').html(response.body.band);
                     $('#model').html(response.body.model);
                     $('#imei').html(response.body.imei);
@@ -191,7 +191,7 @@
                     $('#reason').popup();
                     
                 } else {
-                    $.toast("该资产不存在", 'forbidden');
+                    $.toast("该资产不存在" + JSON.stringify(response), 'forbidden');
                 }
             });
         }

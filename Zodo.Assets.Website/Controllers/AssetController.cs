@@ -18,19 +18,19 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class AssetController : MvcController
     {
-        private AssetService service = new AssetService();
+        private readonly AssetService _service = new AssetService();
 
         #region 列表页
         public IActionResult Index()
         {
             InitDeptAndAccount();
-            InitUI();
+            InitUi();
             return View();
         }
 
         public JsonResult Get(AssetSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var list = service.PageListDto(param, pageIndex, pageSize);
+            var list = _service.PageListDto(param, pageIndex, pageSize);
             return Json(ResultUtil.PageList(list));
         }
         #endregion
@@ -38,7 +38,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 创建
         public ActionResult Create()
         {
-            InitUI();
+            InitUi();
             return View("Edit2");
         }
 
@@ -46,10 +46,10 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Create(IFormCollection collection)
         {
-            Asset entity = new Asset();
+            var entity = new Asset();
             TryUpdateModelAsync(entity);
 
-            var result =  service.Create(entity, AppUser);
+            var result =  _service.Create(entity, AppUser);
             return Json(result);
         }
         #endregion
@@ -61,7 +61,7 @@ namespace Zodo.Assets.Website.Controllers
             if (id.HasValue)
             {
                 // 编辑
-                entity = service.Load((int)id);
+                entity = _service.Load((int)id);
                 if (entity == null)
                 {
                     return new EmptyResult();
@@ -71,8 +71,8 @@ namespace Zodo.Assets.Website.Controllers
 
                 if (entity.AccountId > 0)
                 {
-                    AccountService accountService = new AccountService();
-                    Account account = accountService.Load(entity.AccountId);
+                    var accountService = new AccountService();
+                    var account = accountService.Load(entity.AccountId);
                     ViewBag.AccountName = account == null ? "" : account.Name;
                 }
                 else
@@ -89,7 +89,7 @@ namespace Zodo.Assets.Website.Controllers
                 InitDeptAndAccount();
             }
 
-            InitUI();
+            InitUi();
             return View("Edit2", entity);
         }
 
@@ -99,9 +99,9 @@ namespace Zodo.Assets.Website.Controllers
         {
             try
             {
-                Asset entity = new Asset();
+                var entity = new Asset();
                 TryUpdateModelAsync(entity);
-                var result = service.Save(entity, AppUser);
+                var result = _service.Save(entity, AppUser);
                 if (entity.Id == 0)
                 {
                     entity.Id = result.Body;
@@ -121,8 +121,8 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Delete(int id)
         {
-            var entity = service.Load(id);
-            var result =  service.Delete(entity, AppUser);
+            var entity = _service.Load(id);
+            var result =  _service.Delete(entity, AppUser);
             return Json(result);
         }
         #endregion
@@ -130,7 +130,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 详情
         public ActionResult Details(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -145,17 +145,19 @@ namespace Zodo.Assets.Website.Controllers
             var param = new AssetLogSearchParam();
             param.AssetId = id;
             var list = logService.ListDto(param);
-            return Json(ResultUtil.Success<List<AssetLogDto>>(list.ToList()));
+            return Json(ResultUtil.Success(list.ToList()));
         }
 
         public JsonResult GetMaintainLogs(int id)
         {
             var maintainService = new MaintainService();
-            var param = new MaintainSearchParam();
-            param.AssetId = id;
+            var param = new MaintainSearchParam
+            {
+                AssetId = id
+            };
 
             var list = maintainService.ListDto(param);
-            return Json(ResultUtil.Success<List<MaintainDto>>(list.ToList()));
+            return Json(ResultUtil.Success(list.ToList()));
         }
 
         public JsonResult GetServiceApplyLogs(string code)
@@ -165,7 +167,7 @@ namespace Zodo.Assets.Website.Controllers
             {
                 AssetCode = code
             });
-            return Json(ResultUtil.Success<List<ServiceApply>>(list));
+            return Json(ResultUtil.Success(list));
         }
         #endregion
 
@@ -179,7 +181,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 资产调配
         public ActionResult Move(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -217,7 +219,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Move(AssetLog log, string position)
         {
-            var result = service.Move(log, position, AppUser);
+            var result = _service.Move(log, position, AppUser);
             return Json(result);
         }
         #endregion
@@ -225,7 +227,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 资产借出
         public ActionResult Loan(int id)
         {
-            var asset = service.LoadDto(id);
+            var asset = _service.LoadDto(id);
             if (asset == null)
             {
                 return new EmptyResult();
@@ -263,14 +265,14 @@ namespace Zodo.Assets.Website.Controllers
             var entity = new Loan();
             TryUpdateModelAsync(entity);
 
-            return Json(service.Loan(entity.AssetId, entity.TargetDeptId, entity.TargetAccountId, entity.LoanAt, entity.ExpectedReturnAt, entity.Pics, entity.TargetPosition, entity.Remark, AppUser));
+            return Json(_service.Loan(entity.AssetId, entity.TargetDeptId, entity.TargetAccountId, entity.LoanAt, entity.ExpectedReturnAt, entity.Pics, entity.TargetPosition, entity.Remark, AppUser));
         }
         #endregion
 
         #region 资产报废
         public ActionResult Scrap(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -303,7 +305,7 @@ namespace Zodo.Assets.Website.Controllers
             var log = new AssetLog();
             TryUpdateModelAsync(log);
 
-            var result = service.Scrap(log.AssetId, log.OperateAt, log.Pics, log.Remark, AppUser);
+            var result = _service.Scrap(log.AssetId, log.OperateAt, log.Pics, log.Remark, AppUser);
             return Json(result);
         }
         #endregion
@@ -311,7 +313,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 资产回收
         public IActionResult Recovery(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -351,7 +353,7 @@ namespace Zodo.Assets.Website.Controllers
         {
             var entity = new AssetLog();
             TryUpdateModelAsync(entity);
-            var result = service.Recovery(entity.AssetId, entity.OperateAt, entity.Pics, position, entity.Remark, AppUser);
+            var result = _service.Recovery(entity.AssetId, entity.OperateAt, entity.Pics, position, entity.Remark, AppUser);
             return Json(result);
         }
         #endregion
@@ -364,15 +366,15 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult GetScrapts(AssetSearchParam param, int pageIndex = 1, int pageSize = 20)
         {
-            var pageList = service.ScrapAssets(param, pageIndex, pageSize);
-            return Json(ResultUtil.PageList<AssetDto>(pageList));
+            var pageList = _service.ScrapAssets(param, pageIndex, pageSize);
+            return Json(ResultUtil.PageList(pageList));
         }
         #endregion
 
         #region 二维码
         public ActionResult QrCode(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -386,7 +388,7 @@ namespace Zodo.Assets.Website.Controllers
 
         public ActionResult SmallQrCode(int id)
         {
-            var entity = service.LoadDto(id);
+            var entity = _service.LoadDto(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -406,19 +408,19 @@ namespace Zodo.Assets.Website.Controllers
             assetQrDto.Id = asset.Id;
             assetQrDto.Code = asset.Code;
 
-            string content = JsonConvert.SerializeObject(assetQrDto);
-            QRCodeGenerator generator = new QRCodeGenerator();
-            QRCodeData codeData = generator.CreateQrCode(content, QRCodeGenerator.ECCLevel.M, true);
-            QRCoder.QRCode qrcode = new QRCoder.QRCode(codeData);
+            var content = JsonConvert.SerializeObject(assetQrDto);
+            var generator = new QRCodeGenerator();
+            var codeData = generator.CreateQrCode(content, QRCodeGenerator.ECCLevel.M, true);
+            var qrCode = new QRCode(codeData);
 
-            Bitmap qrImage = qrcode.GetGraphic(10, Color.Black, Color.White, false);
+            var qrImage = qrCode.GetGraphic(10, Color.Black, Color.White, false);
 
-            string savePath = $"{Directory.GetCurrentDirectory()}//wwwroot//upload//QrCodes";
+            var savePath = $"{Directory.GetCurrentDirectory()}//wwwroot//upload//QrCodes";
             if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
             }
-            savePath += "//" + asset.Id.ToString() + ".jpg";
+            savePath += $"//{asset.Id}.jpg";
             qrImage.Save(savePath, System.Drawing.Imaging.ImageFormat.Jpeg);
         }
         #endregion
@@ -437,7 +439,7 @@ namespace Zodo.Assets.Website.Controllers
             ViewBag.Accounts = accounts;
         }
 
-        private void InitUI()
+        private void InitUi()
         {
             // 状态
             ViewBag.States = AssetParameters.States.ToSelectList();
@@ -445,7 +447,7 @@ namespace Zodo.Assets.Website.Controllers
             ViewBag.Healthy = AssetParameters.Healthy.ToSelectList();
             // 分类
             var cates = AssetCateUtil.All();
-            List<SelectListItem> cateItems = new List<SelectListItem>();
+            var cateItems = new List<SelectListItem>();
             foreach (var c in cates)
             {
                 cateItems.Add(new SelectListItem { Text = showName(c.Name, c.Level), Value = c.Id.ToString() });
@@ -455,10 +457,10 @@ namespace Zodo.Assets.Website.Controllers
 
         private string showName(string txt, int level)
         {
-            string str = "";
+            var str = "";
             if (level > 1)
             {
-                for (int i = 0; i < level; i++)
+                for (var i = 0; i < level; i++)
                 {
                     str += HttpUtility.HtmlDecode("&nbsp;&nbsp;");
                 }
@@ -477,35 +479,37 @@ namespace Zodo.Assets.Website.Controllers
         [HttpGet]
         public JsonResult LoadByCode(string code)
         {
-            var entity = service.LoadDto(code);
-            return Json(ResultUtil.Success<AssetDto>(entity));
+            var entity = _service.LoadDto(code);
+            return Json(ResultUtil.Success(entity));
         }
         #endregion
 
         #region 维修
         public ActionResult Maintain(int id)
         {
-            var asset = service.LoadDto(id);
+            var asset = _service.LoadDto(id);
             if (asset == null)
             {
                 return new EmptyResult();
             }
 
-            var mt = new Maintain();
-            mt.AssetCode = asset.Code;
-            mt.AssetName = asset.Name;
-            mt.Position = asset.Position;
-            mt.Imei = asset.Imei;
-            mt.Model = asset.Model;
-            mt.Band = asset.Band;
-            mt.OrigState = asset.State;
-            mt.DeptId = asset.DeptId;
-            mt.DeptName = asset.DeptName;
-            mt.AccountId = asset.AccountId;
-            mt.AccountName = asset.AccountName;
-            mt.RepairAt = DateTime.Today;
-            mt.ServiceFinishAt = DateTime.Today;
-            mt.ServiceStartAt = DateTime.Today;
+            var mt = new Maintain
+            {
+                AssetCode = asset.Code,
+                AssetName = asset.Name,
+                Position = asset.Position,
+                Imei = asset.Imei,
+                Model = asset.Model,
+                Band = asset.Band,
+                OrigState = asset.State,
+                DeptId = asset.DeptId,
+                DeptName = asset.DeptName,
+                AccountId = asset.AccountId,
+                AccountName = asset.AccountName,
+                RepairAt = DateTime.Today,
+                ServiceFinishAt = DateTime.Today,
+                ServiceStartAt = DateTime.Today
+            };
 
             return View(mt);
         }
@@ -516,7 +520,7 @@ namespace Zodo.Assets.Website.Controllers
             var mt = new Maintain();
             TryUpdateModelAsync(mt);
 
-            var result = service.Maintain(mt, AppUser);
+            var result = _service.Maintain(mt, AppUser);
             
             return Json(result);
         }

@@ -8,7 +8,7 @@ using Zodo.Assets.Core;
 
 namespace Zodo.Assets.Application
 {
-    public partial class AssetService : BaseService<Asset>
+    public class AssetService : BaseService<Asset>
     {
         #region 加载一个Dto
         /// <summary>
@@ -51,7 +51,7 @@ namespace Zodo.Assets.Application
             {
                 param = new AssetSearchParam();
             }
-            MySearchUtil util = param.ToSearchUtil();
+            var util = param.ToSearchUtil();
             return db.Fetch<AssetDto>(util, table: "AssetView", cols: cols);
         }
         #endregion
@@ -124,12 +124,11 @@ namespace Zodo.Assets.Application
             }
 
             DeptDto targetDept;
-            Account targetAccount;
 
             if (log.TargetAccountId > 0)
             {
                 var accountService = new AccountService();
-                targetAccount = accountService.Load(log.TargetAccountId);
+                var targetAccount = accountService.Load(log.TargetAccountId);
 
                 if (targetAccount == null)
                 {
@@ -139,7 +138,7 @@ namespace Zodo.Assets.Application
                 targetDept = DeptUtil.Get(targetAccount.DeptId);
                 if (targetDept == null)
                 {
-                    throw new System.Exception("用户所在的部门信息不存在，请联系管理员");
+                    throw new Exception("用户所在的部门信息不存在，请联系管理员");
                 }
 
                 log.TargetAccountId = targetAccount.Id;
@@ -192,27 +191,34 @@ namespace Zodo.Assets.Application
             {
                 return ResultUtil.Do(ResultCodes.验证失败, "该资产处于借出状态，禁止报废");
             }
-            var log = new AssetLog();
-            log.AssetId = asset.Id;
-            log.AssetName = asset.Name;
-            log.AssetCode = asset.Code;
-            log.FromAccountId = asset.AccountId;
-            log.FromAccountName = asset.AccountName;
-            log.FromDeptId = asset.DeptId;
-            log.FromDeptName = asset.DeptName;
-            log.TargetAccountId = 0;
-            log.TargetAccountName = "";
-            log.TargetDeptId = 0;
-            log.TargetDeptName = "";
-            log.Type = "报废";
-            log.OperateAt = operateAt;
-            log.Remark = remark;
-            log.Pics = pics;
+
+            var log = new AssetLog
+            {
+                AssetId = asset.Id,
+                AssetName = asset.Name,
+                AssetCode = asset.Code,
+                FromAccountId = asset.AccountId,
+                FromAccountName = asset.AccountName,
+                FromDeptId = asset.DeptId,
+                FromDeptName = asset.DeptName,
+                TargetAccountId = 0,
+                TargetAccountName = "",
+                TargetDeptId = 0,
+                TargetDeptName = "",
+                Type = "报废",
+                OperateAt = operateAt,
+                Remark = remark,
+                Pics = pics
+            };
             log.BeforeCreate(user);
 
-            KeyValuePairList sqls = new KeyValuePairList();
-            sqls.Add("UPDATE Asset_Asset SET [State]='报废',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new { Id = log.AssetId, UserId = user.Id, UserName = user.Name });
+            var sqls = new KeyValuePairList
+            {
+                {
+                    "UPDATE Asset_Asset SET [State]='报废',UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new { Id = log.AssetId, UserId = user.Id, UserName = user.Name }
+                }
+            };
             log.BeforeCreate(user);
             sqls.Add(db.GetCommonInsertSql<AssetLog>(), log);
 
@@ -300,30 +306,44 @@ namespace Zodo.Assets.Application
             loan.ReturnAt = null;
             loan.Pics = pics;
 
-            var log = new AssetLog();
-            log.AssetId = loan.AssetId;
-            log.AssetCode = loan.AssetCode;
-            log.AssetName = loan.AssetName;
-            log.FromAccountId = loan.FromAccountId;
-            log.FromAccountName = loan.FromAccountName;
-            log.FromDeptId = loan.FromDeptId;
-            log.FromDeptName = loan.FromDeptName;
-            log.TargetAccountId = loan.TargetAccountId;
-            log.TargetAccountName = loan.TargetAccountName;
-            log.TargetDeptId = loan.TargetDeptId;
-            log.TargetDeptName = loan.TargetDeptName;
-            log.Type = "借出";
-            log.OperateAt = loan.LoanAt;
-            log.Pics = loan.Pics;
+            var log = new AssetLog
+            {
+                AssetId = loan.AssetId,
+                AssetCode = loan.AssetCode,
+                AssetName = loan.AssetName,
+                FromAccountId = loan.FromAccountId,
+                FromAccountName = loan.FromAccountName,
+                FromDeptId = loan.FromDeptId,
+                FromDeptName = loan.FromDeptName,
+                TargetAccountId = loan.TargetAccountId,
+                TargetAccountName = loan.TargetAccountName,
+                TargetDeptId = loan.TargetDeptId,
+                TargetDeptName = loan.TargetDeptName,
+                Type = "借出",
+                OperateAt = loan.LoanAt,
+                Pics = loan.Pics
+            };
 
             loan.BeforeCreate(user);
             log.BeforeCreate(user);
 
-            KeyValuePairList sqls = new KeyValuePairList();
-            sqls.Add("UPDATE Asset_Asset SET [State]='借出',Position=@Position,DeptId=@DeptId,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new { Id = log.AssetId, Position = newPositon, UserId = user.Id, UserName = user.Name, AccountId=log.TargetAccountId, DeptId=log.TargetDeptId });
-            sqls.Add(db.GetCommonInsertSql<Loan>(), loan);
-            sqls.Add(db.GetCommonInsertSql<AssetLog>(), log);
+            var sqls = new KeyValuePairList
+            {
+                {
+                    "UPDATE Asset_Asset SET [State]='借出',Position=@Position,DeptId=@DeptId,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new
+                    {
+                        Id = log.AssetId,
+                        Position = newPositon,
+                        UserId = user.Id,
+                        UserName = user.Name,
+                        AccountId = log.TargetAccountId,
+                        DeptId = log.TargetDeptId
+                    }
+                },
+                {db.GetCommonInsertSql<Loan>(), loan},
+                {db.GetCommonInsertSql<AssetLog>(), log}
+            };
 
             var row = db.ExecuteTran(sqls);
             return row ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");
@@ -343,46 +363,48 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "此借出记录已归还，请勿重复操作");
             }
 
-            string state = loan.FromDeptId == 0 ? "闲置" : "使用中";
+            var state = loan.FromDeptId == 0 ? "闲置" : "使用中";
 
-            var log = new AssetLog();
-            log.AssetId = loan.AssetId;
-            log.AssetCode = loan.AssetCode;
-            log.AssetName = loan.AssetName;
-            log.TargetAccountId = loan.FromAccountId;
-            log.TargetAccountName = loan.FromAccountName;
-            log.TargetDeptId = loan.FromDeptId;
-            log.TargetDeptName = loan.FromDeptName;
-            log.FromAccountId = loan.TargetAccountId;
-            log.FromAccountName = loan.TargetAccountName;
-            log.FromDeptId = loan.TargetDeptId;
-            log.FromDeptName = loan.TargetDeptName;
-            log.Type = "归还";
-            log.OperateAt = loan.LoanAt;
-            log.Pics = loan.Pics;
+            var log = new AssetLog
+            {
+                AssetId = loan.AssetId,
+                AssetCode = loan.AssetCode,
+                AssetName = loan.AssetName,
+                TargetAccountId = loan.FromAccountId,
+                TargetAccountName = loan.FromAccountName,
+                TargetDeptId = loan.FromDeptId,
+                TargetDeptName = loan.FromDeptName,
+                FromAccountId = loan.TargetAccountId,
+                FromAccountName = loan.TargetAccountName,
+                FromDeptId = loan.TargetDeptId,
+                FromDeptName = loan.TargetDeptName,
+                Type = "归还",
+                OperateAt = loan.LoanAt,
+                Pics = loan.Pics
+            };
             log.BeforeCreate(user);
 
-            KeyValuePairList sqls = new KeyValuePairList();
-            sqls.Add("UPDATE Asset_Asset SET [State]=@State,DeptId=@DeptId,Position=@Position,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new
+            var sqls = new KeyValuePairList
+            {
                 {
-                    Id = loan.AssetId,
-                    State = state,
-                    DeptId = loan.FromDeptId,
-                    AccountId = loan.FromAccountId,
-                    UserID = user.Id,
-                    UserName = user.Name,
-                    Position = loan.FromPosition
-                });
-            sqls.Add("UPDATE Asset_Loan SET IsReturn=1,ReturnAt=@ReturnAt,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new
+                    "UPDATE Asset_Asset SET [State]=@State,DeptId=@DeptId,Position=@Position,AccountId=@AccountId,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new
+                    {
+                        Id = loan.AssetId,
+                        State = state,
+                        DeptId = loan.FromDeptId,
+                        AccountId = loan.FromAccountId,
+                        UserID = user.Id,
+                        UserName = user.Name,
+                        Position = loan.FromPosition
+                    }
+                },
                 {
-                    Id = loanId,
-                    UserId = user.Id,
-                    UserName = user.Name,
-                    ReturnAt = returnAt
-                });
-            sqls.Add(db.GetCommonInsertSql<AssetLog>(), log);
+                    "UPDATE Asset_Loan SET IsReturn=1,ReturnAt=@ReturnAt,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new {Id = loanId, UserId = user.Id, UserName = user.Name, ReturnAt = returnAt}
+                },
+                {db.GetCommonInsertSql<AssetLog>(), log}
+            };
 
             var row = db.ExecuteTran(sqls);
             return row ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");
@@ -403,34 +425,34 @@ namespace Zodo.Assets.Application
                 return ResultUtil.Do(ResultCodes.验证失败, "回收日期不得小于1900-1-1");
             }
 
-            var log = new AssetLog();
-            log.AssetId = asset.Id;
-            log.AssetName = asset.Name;
-            log.AssetCode = asset.Code;
-            log.FromAccountId = asset.AccountId;
-            log.FromAccountName = asset.AccountName;
-            log.FromDeptId = asset.DeptId;
-            log.FromDeptName = asset.DeptName;
-            log.TargetAccountId = 0;
-            log.TargetAccountName = "";
-            log.TargetDeptId = 0;
-            log.TargetDeptName = "";
-            log.Type = "回收";
-            log.OperateAt = recoveryAt;
-            log.Remark = remark + "\n回收后位置：" + newPosition;
-            log.Pics = pics;
+            var log = new AssetLog
+            {
+                AssetId = asset.Id,
+                AssetName = asset.Name,
+                AssetCode = asset.Code,
+                FromAccountId = asset.AccountId,
+                FromAccountName = asset.AccountName,
+                FromDeptId = asset.DeptId,
+                FromDeptName = asset.DeptName,
+                TargetAccountId = 0,
+                TargetAccountName = "",
+                TargetDeptId = 0,
+                TargetDeptName = "",
+                Type = "回收",
+                OperateAt = recoveryAt,
+                Remark = remark + "\n回收后位置：" + newPosition,
+                Pics = pics
+            };
             log.BeforeCreate(user);
 
-            KeyValuePairList sqls = new KeyValuePairList();
-            sqls.Add("UPDATE Asset_Asset SET [State]='闲置',Position=@Position,DeptId=0,AccountId=0,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
-                new
+            var sqls = new KeyValuePairList
+            {
                 {
-                    Id = log.AssetId,
-                    UserID = user.Id,
-                    UserName = user.Name,
-                    Position = newPosition
-                });
-            sqls.Add(db.GetCommonInsertSql<AssetLog>(), log);
+                    "UPDATE Asset_Asset SET [State]='闲置',Position=@Position,DeptId=0,AccountId=0,UpdateAt=GETDATE(),UpdateBy=@UserId,Updator=@UserName WHERE Id=@Id",
+                    new {Id = log.AssetId, UserID = user.Id, UserName = user.Name, Position = newPosition}
+                },
+                {db.GetCommonInsertSql<AssetLog>(), log}
+            };
 
             var row = db.ExecuteTran(sqls);
             return row ? ResultUtil.Success() : ResultUtil.Do(ResultCodes.数据库操作失败, "数据库写入失败");

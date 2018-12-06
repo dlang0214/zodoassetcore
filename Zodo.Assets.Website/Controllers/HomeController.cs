@@ -14,7 +14,7 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class HomeController : MvcController
     {
-        private ILog log = LogManager.GetLogger(Startup.LogResposition.Name, "");
+        private readonly ILog _log = LogManager.GetLogger(Startup.LogResposition.Name, "");
 
         #region 首页
         public IActionResult Index()
@@ -55,7 +55,7 @@ namespace Zodo.Assets.Website.Controllers
             }
             else
             {
-                string errorMessage = "";
+                var errorMessage = "";
                 foreach (var v in ModelState.Values)
                 {
                     foreach (var e in v.Errors)
@@ -74,8 +74,19 @@ namespace Zodo.Assets.Website.Controllers
         {
             var feature = HttpContext.Features.Get<IExceptionHandlerFeature>();
             var error = feature?.Error;
-            log.Error(error);
+            _log.Error(error);
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+//        public JsonResult Load(int id)
+//        {
+//            var service = new AssetService();
+//            var entity = service.LoadDto(id);
+//            if (entity == null)
+//            {
+//                return Json(ResultUtil.Do(ResultCodes.数据不存在, "请求的数据不存在"));
+//            }
+//            return Json(ResultUtil.Success(entity));
+//        }
     }
 }

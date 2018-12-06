@@ -7,7 +7,7 @@ namespace Zodo.Assets.Website.Controllers
 {
     public class StockController : MvcController
     {
-        private StockService service = new StockService();
+        private readonly StockService _service = new StockService();
 
         #region 首页
         public IActionResult Index()
@@ -17,8 +17,8 @@ namespace Zodo.Assets.Website.Controllers
 
         public JsonResult Get(int pageIndex, int pageSize, bool? isFinish = null, string key = "")
         {
-            var list = service.Query(pageIndex, pageSize, isFinish, key);
-            return Json(ResultUtil.PageList<Stock>(list));
+            var list = _service.Query(pageIndex, pageSize, isFinish, key);
+            return Json(ResultUtil.PageList(list));
         }
         #endregion
 
@@ -32,7 +32,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Create(Stock entity)
         {
-            var result = service.Create2(entity, AppUser);
+            var result = _service.Create2(entity, AppUser);
             return Json(result);
         }
         #endregion
@@ -40,7 +40,7 @@ namespace Zodo.Assets.Website.Controllers
         #region 编辑盘点信息
         public IActionResult Edit(int id)
         {
-            var entity = service.Load(id);
+            var entity = _service.Load(id);
             if (entity == null)
             {
                 return new EmptyResult();
@@ -58,7 +58,7 @@ namespace Zodo.Assets.Website.Controllers
                 return Json(ResultUtil.Do(ResultCodes.非法请求, "非法请求"));
             }
 
-            var result = service.Update(entity, AppUser);
+            var result = _service.Update(entity, AppUser);
             return Json(result);
         }
         #endregion
@@ -68,7 +68,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Delete(int id)
         {
-            var result = service.Delete(id, AppUser);
+            var result = _service.Delete(id, AppUser);
             return Json(result);
         }
         #endregion
@@ -78,7 +78,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult AddItems(int id, int[] assetIds)
         {
-            var result = service.SetItems(id, assetIds, AppUser);
+            var result = _service.SetItems(id, assetIds, AppUser);
             return Json(result);
         }
         #endregion
@@ -88,7 +88,7 @@ namespace Zodo.Assets.Website.Controllers
         [ValidateAntiForgeryToken]
         public JsonResult Finish(int id)
         {
-            var result = service.Finish(id, AppUser);
+            var result = _service.Finish(id, AppUser);
             return Json(result);
         } 
         #endregion
