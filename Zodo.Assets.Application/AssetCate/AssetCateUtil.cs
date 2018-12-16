@@ -31,8 +31,8 @@ namespace Zodo.Assets.Application
             var cates = service.Fetch();
 
             Cates = new List<AssetCateDto>();
-            Dg(cates, "");
-            void Dg(IReadOnlyCollection<AssetCateDto> source, string levelPath, int parent = 0, int level = 1)
+            Dg(cates, new List<int>());
+            void Dg(IReadOnlyCollection<AssetCateDto> source, IReadOnlyCollection<int> levelPath, int parent = 0, int level = 1)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 foreach (var r in root)
@@ -47,7 +47,8 @@ namespace Zodo.Assets.Application
                     Cates.Add(temp);
 
                     temp.Level = level;
-                    temp.LevelPath = levelPath + "," + r.Id;
+                    temp.LevelPath = levelPath.ToList();
+                    temp.LevelPath.Add(r.Id);
 
                     if (source.All(s => s.ParentId != r.Id)) continue;
 
@@ -141,9 +142,8 @@ namespace Zodo.Assets.Application
 
         private static int[] CalcSelfAndChildrenIds(int id)
         {
-            var key = "," + id;
             return All()
-                   .Where(d => d.LevelPath.Contains(key))
+                   .Where(d => d.LevelPath.Contains(id))
                    .Select(d => d.Id)
                    .ToArray();
         }

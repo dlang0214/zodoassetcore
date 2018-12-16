@@ -1,0 +1,69 @@
+﻿@model List<Zodo.Assets.Application.StringSummaryDto>
+@{
+    ViewData["Title"] = "资产健康度汇总";
+}
+
+<h3 class="page-title" style="margin-top: 20px">@ViewData["Title"]</h3>
+
+<div class="container-980">
+    <div class="toolbar row no-print">
+        <div class="col-4">
+            <label><b class="text-danger">注意：</b><span>搜索功能仅限于导出数据</span></label>
+        </div>
+        <div class="col-8 content-right">
+            <form method="get">
+                <select id="cateId" name="CateId" asp-items="ViewBag.Cates">
+                    <option value="">资产类型</option>
+                </select>
+                <select id="deptId" name="DeptId" asp-items="ViewBag.Depts">
+                    <option value="">所在部门</option>
+                </select>
+                <select id="healthy" name="Healthy" asp-items="ViewBag.Healthy">
+                    <option value="">资产健康度</option>
+                </select>
+                <select id="state" name="State" asp-items="ViewBag.States">
+                    <option value="">资产状态</option>
+                </select>
+                <a href="javascript:;" class="btn btn-green" onclick="exportExcel()">导出资产清单</a>
+            </form>
+        </div>
+    </div>
+    <hr />
+    <table class="table table-bordered table-info table-info-mini table-striped table-hover" id="report">
+        <thead>
+            <tr>
+                <th>资产健康度</th>
+                <th>数量</th>
+            </tr>
+        </thead>
+        @if (Model.Any())
+        {
+            foreach (var dto in Model)
+            {
+                <tr title="@dto.Property : @dto.Num">
+                    <td>@dto.Property</td>
+                    <td>@dto.Num</td>
+                </tr>
+            }
+            <tr class="special text-danger">
+                <td><b>总计</b></td>
+                <td>@Model.Sum(m=>m.Num)</td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="report-title content-center">暂无数据</td>
+            </tr>
+        }
+    </table>
+</div>
+@section scripts {
+    <script>
+        function exportExcel() {
+            var param = $('form').serialize();
+            var url = '/Report/ExportHealthy?' + param;
+            window.open(url);
+        }
+    </script>
+}

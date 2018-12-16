@@ -867,8 +867,8 @@ input[type='radio'] {
     background-color: transparent;
 }
 
-.table-editable>tbody>tr.special {
-    background-color: #ffc;
+tr.special {
+    background-color: #ffc !important;
 }
 
 .table-info {

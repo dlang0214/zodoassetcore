@@ -450,4 +450,10 @@ $(function () {
 
     // 查看缩略图
     $(".uploader-thumbs").viewer();
+
+    // 列表搜索
+    $('.search-box-body input, .search-box-body select, input[name="Key"]').on('change',
+        function() {
+            window.grid.search();
+        });
 });

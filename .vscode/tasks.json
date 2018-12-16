@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Zodo.Assets.Website/Zodo.Assets.Website.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

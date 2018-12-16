@@ -463,12 +463,14 @@ namespace Zodo.Assets.Application
         public List<AssetGroupDto> GetCateGroup(AssetSearchParam param)
         {
             var all = ListDto(param).ToList();
-            var groups = all.Select(a => a.AssetCate).Distinct();
+            var groups = all.Select(a => a.AssetCateId).Distinct();
 
+            var cates = AssetCateUtil.All();
             return groups.Select(g => new AssetGroupDto
             {
-                GroupName = string.IsNullOrWhiteSpace(g) ? "其他分类" : g,
-                Assets = all.Where(a => a.AssetCate == g).ToList()
+                GroupId = g,
+                GroupName = cates.SingleOrDefault(c=>c.Id==g)?.Name,
+                Assets = all.Where(a => a.AssetCateId == g).ToList()
             }).ToList();
         }
         #endregion

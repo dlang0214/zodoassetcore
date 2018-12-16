@@ -35,9 +35,9 @@ namespace Zodo.Assets.Application
             var depts = service.Fetch(new DeptSearchParam());
 
             Depts = new List<DeptDto>();
-            Dg(depts, "");
+            Dg(depts, new List<int>());
 
-            void Dg(IReadOnlyCollection<DeptDto> source, string levelPath = ",", int parent = 0, int level = 1)
+            void Dg(IReadOnlyCollection<DeptDto> source, IReadOnlyCollection<int> levelPath, int parent = 0, int level = 1)
             {
                 var root = source.Where(s => s.ParentId == parent).OrderBy(s => s.Sort);
                 foreach (var r in root)
@@ -52,12 +52,13 @@ namespace Zodo.Assets.Application
                     Depts.Add(temp);
 
                     temp.Level = level;
-                    temp.LevelPath = levelPath + r.Id + ",";
+                    temp.LevelPath = levelPath.ToList();
+                    temp.LevelPath.Add(r.Id);
 
                     if (source.All(s => s.ParentId != r.Id)) continue;
 
                     level++;
-                    Dg(source, temp.LevelPath, r.Id, level);
+                    Dg(source, temp.LevelPath.ToList(), r.Id, level);
                     level--;
                 }
             }
@@ -143,9 +144,8 @@ namespace Zodo.Assets.Application
 
         private static int[] CalcSelfAndChildrenIds(int id)
         {
-            var key = "," + id + ",";
             return All()
-                   .Where(d => d.LevelPath.Contains(key))
+                   .Where(d => d.LevelPath.Contains(id))
                    .Select(d => d.Id)
                    .ToArray();
         }

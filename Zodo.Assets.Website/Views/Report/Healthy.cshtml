@@ -46,62 +46,95 @@
 
 <div class="toolbar row no-print">
     <div class="col-6">
-        <a href="/Report/ExportHealthy" class="btn btn-green" target="_blank">导出资产清单</a>
+        <a href="javascript:;" class="btn btn-green" onclick="exportExcel()">导出资产清单</a>
         <a href="javascript:;" onclick="window.print()" class="btn btn-blue">打印</a>
     </div>
-    <div class="col-6 content-right"></div>
+    <div class="col-6 content-right">
+        <form method="get">
+            <select id="cateId" name="CateId" asp-items="ViewBag.Cates">
+                <option value="">资产类型</option>
+            </select>
+            <select id="deptId" name="DeptId" asp-items="ViewBag.Depts">
+                <option value="">所在部门</option>
+            </select>
+            <select id="healthy" name="Healthy" asp-items="ViewBag.Healthy">
+                <option value="">资产健康度</option>
+            </select>
+            <select id="state" name="State" asp-items="ViewBag.States">
+                <option value="">资产状态</option>
+            </select>
+            <input type="submit" value="搜索" class="btn btn-success" />
+        </form>
+    </div>
 </div>
 <div class="container-980" style="margin-top: 50px; width: 980px;">
     <table class="table table-bordered table-info table-info-mini" id="report">
-        @foreach (var g in Model)
+        @if (Model.Any())
         {
-            <tr>
-                <td colspan="5" class="report-title">@g.GroupName</td>
-            </tr>
-            @if (g.Assets.Count > 0)
+            foreach (var g in Model)
             {
-                @foreach (var a in g.Assets)
+                <tr>
+                    <td colspan="5" class="report-title">@(string.IsNullOrWhiteSpace(g.GroupName) ? "未知" : g.GroupName) (@g.Assets.Count)</td>
+                </tr>
+                if (g.Assets.Count > 0)
                 {
-                    //var json = "{\"id\":\"" + a.Id.ToString() + "\", \"code\":\"" + a.Code + "\"}";
-                    string imgSrc = "/upload/qrcodes/" + a.Id.ToString() + ".jpg";
+                    foreach (var a in g.Assets)
+                    {
+                        var imgSrc = "/upload/qrcodes/" + a.Id.ToString() + ".jpg";
 
+                        <tr>
+                            <td class="label">编号</td>
+                            <td>@a.Code</td>
+                            <td class="label">名称</td>
+                            <td>@a.Name</td>
+                            <td rowspan="5" class="qr-box content-center">
+                                <img src="@imgSrc" alt="二维码" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">所在位置</td>
+                            <td colspan="3">@a.Position</td>
+                        </tr>
+                        <tr>
+                            <td class="label">使用单位</td>
+                            <td>@a.DeptName</td>
+                            <td class="label">使用人</td>
+                            <td>@a.AccountName</td>
+                        </tr>
+                        <tr>
+                            <td class="label">品牌</td>
+                            <td>@a.Band</td>
+                            <td class="label">型号</td>
+                            <td>@a.Model</td>
+                        </tr>
+                        <tr class="last">
+                            <td class="label">序列号</td>
+                            <td colspan="3">@a.Imei</td>
+                        </tr>
+                    }
+                }
+                else
+                {
                     <tr>
-                        <td class="label">编号</td>
-                        <td>@a.Code</td>
-                        <td class="label">名称</td>
-                        <td>@a.Name</td>
-                        <td rowspan="5" class="qr-box content-center">
-                            <img src="@imgSrc" alt="二维码" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label">所在位置</td>
-                        <td colspan="3">@a.Position</td>
-                    </tr>
-                    <tr>
-                        <td class="label">使用单位</td>
-                        <td>@a.DeptName</td>
-                        <td class="label">使用人</td>
-                        <td>@a.AccountName</td>
-                    </tr>
-                    <tr>
-                        <td class="label">品牌</td>
-                        <td>@a.Band</td>
-                        <td class="label">型号</td>
-                        <td>@a.Model</td>
-                    </tr>
-                    <tr class="last">
-                        <td class="label">序列号</td>
-                        <td colspan="3">@a.Imei</td>
+                        <td colspan="5" class="empty">暂无</td>
                     </tr>
                 }
             }
-            else
-            {
-                <tr>
-                    <td colspan="5" class="empty">暂无</td>
-                </tr>
-            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="report-title content-center">暂无数据</td>
+            </tr>
         }
     </table>
 </div>
+@section scripts {
+    <script>
+        function exportExcel() {
+            var param = $('form').serialize();
+            var url = '/Report/ExportHealthy?' + param;
+            window.open(url);
+        }
+    </script>
+}
