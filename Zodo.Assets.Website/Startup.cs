@@ -36,10 +36,10 @@ namespace Zodo.Assets.Website
         {
             //services.AddMemoryCache(); //使用本地缓存必须添加
 
-            //services.AddDistributedRedisCache((options) =>
-            //{
-            //    options.Configuration = "127.0.0.1:6379";
-            //});
+            services.AddDistributedRedisCache((options) =>
+            {
+                options.Configuration = "127.0.0.1:6379";
+            });
 
             services.AddSession();
 

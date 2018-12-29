@@ -90,7 +90,7 @@
                 <div class="search-box-body form-box">
                     @Html.AntiForgeryToken()
                     <div class="row">
-                        <div class="col-4 form-box-cell">
+                        <div class="col-3 form-box-cell">
                             <div class="label">资产类型</div>
                             <div class="control">
                                 <select id="cateId" name="CateId" asp-items="ViewBag.Cates">
@@ -98,7 +98,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4 form-box-cell">
+                        <div class="col-3 form-box-cell">
                             <div class="label">状态</div>
                             <div class="control">
                                 <select id="state" name="State" asp-items="ViewBag.States">
@@ -106,7 +106,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4 form-box-cell">
+                        <div class="col-3 form-box-cell">
                             <div class="label">健康度</div>
                             <div class="control">
                                 <select id="healthy" name="Healthy" asp-items="ViewBag.Healthy">
@@ -114,7 +114,15 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4 form-box-cell">
+                        <div class="col-3 form-box-cell">
+                            <div class="label">资产位置</div>
+                            <div class="control">
+                                <input type="search" name="Position" value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3 form-box-cell">
                             <div class="label">所在部门</div>
                             <div class="control">
                                 <select id="deptId" name="DeptId" asp-items="ViewBag.Depts">
@@ -122,7 +130,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4 form-box-cell">
+                        <div class="col-3 form-box-cell">
                             <div class="label">当前使用人</div>
                             <div class="control">
                                 <select id="accountId" name="AccountId">
@@ -130,7 +138,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4 form-box-cell">
+                        <div class="col-6 form-box-cell">
                             <div class="label">采购日期</div>
                             <div class="control row">
                                 <div class="col-6">
@@ -189,7 +197,7 @@
                 { title: '健康度', field: 'healthy', width: 90 },
                 { title: '所在部门', field: 'deptName', width: 90 },
                 { title: '当前使用人', field: 'accountName', width: 90 },
-                { title: '所在位置', field: 'position' },
+                { title: '所在位置', field: 'position', width: 180, hasTag: true },
                 { title: '采购日期', field: 'assignDate', width: 90 }
             ],
             keyColumn: 'id',
@@ -210,7 +218,7 @@
             auto: true
         });
 
-        function calcAccountDropdowList() {
+        function calcAccountDropdownList() {
             var deptId = $('#deptId').val();
             var dom = $('#accountId');
             dom.html('');
@@ -225,10 +233,10 @@
 
         $(function () { 
             $('#deptId').on('change', function () {
-                calcAccountDropdowList();
+                calcAccountDropdownList();
             });
             
-            calcAccountDropdowList();
+            calcAccountDropdownList();
         });
     </script>
 }

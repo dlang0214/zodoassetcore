@@ -8,6 +8,8 @@ namespace Zodo.Assets.Application
 
         public string State { get; set; }
 
+        public string Position { get; set; }
+
         public bool IncludeScrap { get; set; } = false;
 
         public int? CateId { get; set; }
@@ -29,6 +31,11 @@ namespace Zodo.Assets.Application
             if (!string.IsNullOrWhiteSpace(Key))
             {
                 util.AndContains(new[] { "Name", "Code", "FinancialCode", "Band", "Imei", "Model", "Source", "Remark", "Position", "DeptName", "AccountName" }, Key.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(Position))
+            {
+                util.AndContains("Position", Position.Trim());
             }
 
             if (!string.IsNullOrWhiteSpace(State))

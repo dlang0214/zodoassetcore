@@ -304,7 +304,7 @@
                 default:
                     break;
             }
-            return '<td' + tdClassName + '><div class="cell">' + val + '</div></td>';
+            return '<td' + tdClassName + ((col.hasTag) ? ' title="' + val + '"' : '') + '><div class="cell">' + val + '</div></td>';
         };
 
         //    5.5 树形列表的显示
@@ -432,7 +432,7 @@
             buttondomTBody.append(nextBtn);
             var lastBtn = $('<a class="disabled"><i class="fa fa-fast-forward"></i></a>');
             buttondomTBody.append(lastBtn);
-            var pageSize = $('<select name="pageSize"><option value="20">每页20条</option><option value="30">每页30条</option><option value="50">每页50条</option></select>');
+            var pageSize = $('<select name="pageSize"><option value="20">每页20条</option><option value="30">每页30条</option><option value="50">每页50条</option><option value="100">每页100条</option><option value="200">每页200条</option><option value="500">每页500条</option></select>');
             buttondomTBody.append(pageSize);
 
             this.addEventListener = function (fn) {
@@ -657,7 +657,7 @@
             if (!isMulti && selectedItem) {
                 items.push(selectedItem);
             } else {
-                $.each(_this.find(':checked'), function (idx, item) {
+                $.each(_this.body.find(':checked'), function (idx, item) {
                     var index = $(item).val();
                     items.push(data[index]);
                 });
