@@ -169,6 +169,56 @@ namespace Zodo.Assets.Website.Controllers
             {
                 return Json(ResultUtil.Exception(ex));
             }
+        }
+        #endregion
+
+        #region 审批人
+        public IActionResult Approver()
+        {
+            var entity = _service.Load("Approver");
+            if (entity == null)
+            {
+                entity = new Core.DataItem
+                {
+                    K = "Approver",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
+            }
+            return View(entity);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public JsonResult Approver(string v)
+        {
+            var result = _service.Update("Approver", v, AppUser);
+            return Json(result);
+        }
+        #endregion
+        
+        #region 申请人
+        public IActionResult Proposer()
+        {
+            var entity = _service.Load("Proposer");
+            if (entity == null)
+            {
+                entity = new Core.DataItem
+                {
+                    K = "Approver",
+                    V = ""
+                };
+                _service.Create(entity, AppUser);
+            }
+            return View(entity);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public JsonResult Proposer(string v)
+        {
+            var result = _service.Update("Proposer", v, AppUser);
+            return Json(result);
         } 
         #endregion
     }

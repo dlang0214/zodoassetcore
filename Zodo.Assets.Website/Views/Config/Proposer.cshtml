@@ -1,0 +1,41 @@
+﻿@model Zodo.Assets.Core.DataItem
+
+@{
+    ViewData["Title"] = "服务费申请人";
+}
+
+<div class="container-980">
+    <form asp-action="Approver">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <h3 class="form-box-title">@ViewData["Title"]</h3>
+        <div class="form-box row">
+            <div class="col-12">
+                <div class="label">申请人编号</div>
+                <div class="control">
+                    <textarea asp-for="V" rows="10"></textarea>
+                    <span>企业微信通讯中的用户id，一般是用户姓名的汉语拼音，多个userid请用 | 分割。</span>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="form-box-foot content-center">
+            <input type="submit" class="btn btn-green" value="提交" />
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script src="~/lib/validator/validator.js"></script>
+    <script>
+        myUI.initForm({
+            successFn: function (response) {
+                if (response.code === 200) {
+                    alert('更新成功');
+                } else {
+                    alert('更新失败：' + response.message);
+                }
+            }
+        });
+    </script>
+}
+
